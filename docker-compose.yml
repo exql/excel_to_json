@@ -1,0 +1,38 @@
+version: "3.8"
+   
+services:
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_USER: dbadmin
+      MYSQL_PASSWORD: Admin2024
+      MYSQL_DATABASE: tJournalDatabase
+      MYSQL_ROOT: tJournal_root
+      MYSQL_ROOT_PASSWORD: tJournal$2024
+    restart:
+      unless-stopped
+    volumes:
+      - ./db_data:/var/lib/mysql
+      - ./initial.sql:/docker-entrypoint-initdb.d/initial.sql:ro
+    ports:
+      - "3306:3306"
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: tJournal$2024
