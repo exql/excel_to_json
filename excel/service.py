@@ -13,7 +13,7 @@ from excel.models import PerfilUsuario
 import pdfplumber
 import re
 from django.utils import timezone
-from .models import RegistroExcel, DatosLab
+from .models import RegistroExcel, DatosLab, Motivo, SubMotivo, Especie, Categoria, Tecnica
 
 
 # Se conecta a la Base de datos y trae los datos de la vista laboratorio_codigo_ensayos que contiene el codigo del rubro
@@ -45,6 +45,32 @@ def rubros_lab(request):
     print(rubrosLab)  # Solo para pruebas temporales en consola
 
     return rubrosLab
+
+
+def cargar_db():
+    """
+    Consulta las tablas de la base de datos y devuelve
+    diccionarios para motivos, submotivos, especies, categorías y técnicas.
+    """
+
+    # Motivos: {descripcion: codigo}
+    motivos = {m.descripcion.strip(): m.codigo for m in Motivo.objects.all()}
+
+    # Submotivos: {descripcion: codigo}
+    submotivos = {s.descripcion.strip(): s.codigo for s in SubMotivo.objects.all()}
+
+    # Especies: {descripcion: codigo}
+    especies = {e.descripcion.strip(): e.codigo for e in Especie.objects.all()}
+
+    # Categorías: {descripcion: codigo}
+    categorias = {c.descripcion.strip(): c.codigo for c in Categoria.objects.all()}
+
+    # Técnicas: {descripcion: codigo}
+    tecnicas = {t.tecnica.strip(): t for t in Tecnica.objects.all()}
+
+
+    return motivos, submotivos, especies, categorias, tecnicas
+
 
 # Da formato fecha a los datos de las actas digitales para generar la plantila del acta digital.
 def formatear_fecha_actas(fecha):
@@ -741,127 +767,112 @@ def extraer_tablas2(acta):
 
 # Extraigo los datos de la cabecera de las actas digitales.
 
+
 def extraer_datos_pdf(ruta_pdf):
     """
-    Extrae del PDF:
+    Extrae datos del PDF y mapea contra los catálogos de la base de datos:
     - Número de acta
     - CUIT del funcionario (formateado xx-yyyyyyyy-zz)
     - Nro. Oficial Senasa (formato original)
-    - Motivo (mapeado contra dict motivos)
-    - Submotivo (mapeado contra dict submotivos)
+    - Motivo (tabla Motivo)
+    - Submotivo (tabla SubMotivo)
     - Fecha Toma (desde 'Fecha Muestra')
-    - Especie (mapeado contra dict especies)
+    - Especie (tabla Especie)
+    - Categoría (tabla Categoria)
+    - Técnicas (tabla Tecnica, devuelve id) desde bloque 'Grupo de Análisis Analito Técnica'
     """
 
-    motivos = {
-        "MUESTREO BRUCELOSIS": 465,
-        "MUESTREO BRUCELOSIS MELITENSIS": 3,
-        "MUESTREO BRUCELOSIS OVINA": 2,
-        "MUESTREO EQUINO": 463
-    }
-
-    submotivos = {
-        "CONTROL DE SERONEGATIVIDAD PARA EL MOVIMIENTO (CSM)": 9,
-        "CONTROL INTERNO (BRC)": 30,
-        "DETERMINACIÓN OBLIGATORIA DE ESTATUS SANITARIO (DOES PREDIO LIBRE))": 69,
-        "DETERMINACIÓN OBLIGATORIA DE ESTATUS SANITARIO (DOES PREDIO NEGATIVO)": 23,
-        "PLAN DE SANEAMIENTO (BRC)": 16,
-        "RECERTIFICACIÓN DE LIBRE": 45,
-        "REMUESTREO DE ANIMALES SOSPECHOSOS": 21,
-        "REMUESTREO POR ANALISIS EPIDEMIOLOGICO": 31,
-        "CERTIFICACION DE ESTABLECIMIENTO LIBRE": 33,
-        "MOVIMIENTO": 32,
-        "SANEAMIENTO": 5,
-        "VIGILANCIA EPIDEMIOLÓGICA": 90,
-        "CERTIFICACIÓN": 68,
-        "RELEVAMIENTO SANITARIO": 4,
-        "REPETICIÓN DE PRUEBA": 7,
-        "TRASLADO / EXPOSICIÓN": 34,
-        "VIGILANCIA": 11,
-        "VIGILANCIA OFICIAL EN ESTABLECIMIENTO":63,
-        "REMATE FERIA": 47,
-        "AGRICULTURA FAMILIAR":22
-    }
-
-    especies = {
-        "BOVINO": "E21",
-        "BUBALO": "E22",
-        "CAMÉLIDO": "E16",
-        "CAPRINO": "E24",
-        "CIERVO COMÚN": "E83",
-        "CONEJO": "E70",
-        "LIEBRE": "E71",
-        "OVINO": "E25",
-        "PORCINO": "E79",
-        "EQUIDO": "E17",
-        "LAMA": "E37"
-    }
+    # Cargar catálogos desde la base de datos
+    motivos, submotivos, especies, categorias, tecnicas = cargar_db()
 
     datos = {}
+    bloque_tecnicas = ""
+
+    # Abrimos el PDF y recorremos las páginas
     with pdfplumber.open(ruta_pdf) as pdf:
         for pagina in pdf.pages:
             contenido = pagina.extract_text()
-            if contenido:
-                # Número de acta
-                match_acta = re.search(r"ACTA DE TOMA DE MUESTRAS Nº\s*(\d+)", contenido)
-                if match_acta:
-                    datos["numeroActa"] = match_acta.group(1)
+            if not contenido:
+                continue
 
-                # CUIT del funcionario
-                match_cuit = re.search(r"Funcionario:\s*(\d+)", contenido)
-                if match_cuit:
-                    cuit_raw = match_cuit.group(1)
-                    if len(cuit_raw) >= 10:
-                        datos["cuitDeFuncionario"] = f"{cuit_raw[:2]}-{cuit_raw[2:-1]}-{cuit_raw[-1]}"
-                    else:
-                        datos["cuitDeFuncionario"] = cuit_raw
+            # Número de acta
+            match_acta = re.search(r"ACTA DE TOMA DE MUESTRAS Nº\s*(\d+)", contenido)
+            if match_acta:
+                datos["numeroActa"] = match_acta.group(1)
 
-                # Nro. Oficial Senasa
-                match_senasa = re.search(r"Nro\. Oficial Senasa:\s*([\d./]+)", contenido)
-                if match_senasa:
-                    datos["RENSPA"] = match_senasa.group(1)
-
-                # Fecha Muestra → Fecha Toma (corta antes de Funcionario)
-                match_fecha = re.search(r"Fecha Muestra:\s*([^\n]+?)(?=\s*Funcionario:)", contenido)
-                if match_fecha:
-                    datos["FechaToma"] = match_fecha.group(1).strip()
+            # CUIT del funcionario
+            match_cuit = re.search(r"Funcionario:\s*(\d+)", contenido)
+            if match_cuit:
+                cuit_raw = match_cuit.group(1)
+                if len(cuit_raw) >= 10:
+                    datos["cuitDeFuncionario"] = f"{cuit_raw[:2]}-{cuit_raw[2:-1]}-{cuit_raw[-1]}"
                 else:
-                    datos["FechaToma"] = None
+                    datos["cuitDeFuncionario"] = cuit_raw
 
-                # Motivo (corta antes de Submotivo)
-                match_motivo = re.search(r"Motivo:\s*(.*?)(?=\s*Submotivo:)", contenido, re.DOTALL)
-                if match_motivo:
-                    motivo_texto = match_motivo.group(1).strip()
-                    datos["Motivo"] = motivos.get(motivo_texto, None)
-                    print(f"match motivo: {motivo_texto}")
-                else:
-                    datos["Motivo"] = None
-                    print("No se encontró motivo")
+            # Nro. Oficial Senasa
+            match_senasa = re.search(r"Nro\. Oficial Senasa:\s*([\d./]+)", contenido)
+            if match_senasa:
+                datos["RENSPA"] = match_senasa.group(1)
 
-                # Submotivo (corta antes de Expediente)
-                match_submotivo = re.search(r"Submotivo:\s*(.*?)(?=\s*Expediente)", contenido, re.DOTALL)
-                if match_submotivo:
-                    submotivo_texto = match_submotivo.group(1).replace("\n", " ").strip()
-                    datos["SubMotivo"] = submotivos.get(submotivo_texto, None)
-                    print(f"match submotivo: {submotivo_texto}")
-                else:
-                    datos["SubMotivo"] = None
-                    print("No se encontró submotivo")
+            # Fecha Muestra → Fecha Toma
+            match_fecha = re.search(r"Fecha Muestra:\s*([^\n]+?)(?=\s*Funcionario:)", contenido)
+            datos["FechaToma"] = match_fecha.group(1).strip() if match_fecha else None
 
-                # Especie (corta antes de Matriz)
-                match_especie = re.search(r"Especie:\s*(.*?)(?=\s*Matriz)", contenido, re.DOTALL)
-                if match_especie:
-                    especie_texto = match_especie.group(1).strip()
-                    datos["Especie"] = especies.get(especie_texto, None)
-                    print(f"match especie: {especie_texto}")
-                else:
-                    datos["Especie"] = None
-                    print("No se encontró especie")
+            # Motivo
+            match_motivo = re.search(r"Motivo:\s*(.*?)(?=\s*Submotivo:)", contenido, re.DOTALL)
+            if match_motivo:
+                motivo_texto = match_motivo.group(1).strip()
+                datos["Motivo"] = motivos.get(motivo_texto)
+            else:
+                datos["Motivo"] = None
 
-                # Si ya encontramos todo lo que necesitamos, podemos cortar
-                if all(k in datos for k in ["numeroActa", "cuitDeFuncionario", "RENSPA", "Motivo", "SubMotivo", "FechaToma", "Especie"]):
-                    return datos
+            # Submotivo
+            match_submotivo = re.search(r"Submotivo:\s*(.*?)(?=\s*Expediente)", contenido, re.DOTALL)
+            if match_submotivo:
+                submotivo_texto = match_submotivo.group(1).replace("\n", " ").strip()
+                datos["SubMotivo"] = submotivos.get(submotivo_texto)
+            else:
+                datos["SubMotivo"] = None
+
+            # Especie
+            match_especie = re.search(r"Especie:\s*(.*?)(?=\s*Matriz)", contenido, re.DOTALL)
+            if match_especie:
+                especie_texto = match_especie.group(1).strip()
+                datos["Especie"] = especies.get(especie_texto)
+            else:
+                datos["Especie"] = None
+
+            # Categoría (ejemplo: si aparece en el PDF antes de Sexo)
+            match_categoria = re.search(r"Categoría:\s*(.*?)(?=\s*Sexo)", contenido, re.DOTALL)
+            if match_categoria:
+                categoria_texto = match_categoria.group(1).strip()
+                datos["Categoria"] = categorias.get(categoria_texto)
+            else:
+                datos["Categoria"] = None
+
+            # Bloque de técnicas: todo lo que está entre "Grupo de Análisis Analito Técnica" y "ANEXO CON LAS MUESTRAS"
+            match_bloque = re.search(
+                r"Grupo de Análisis Analito Técnica(.*?)ANEXO CON LAS MUESTRAS",
+                contenido,
+                re.DOTALL
+            )
+            if match_bloque:
+                bloque_tecnicas += match_bloque.group(1)
+
+        # Procesamos el bloque de técnicas contra la tabla Tecnica
+        if bloque_tecnicas:
+            tecnicas_encontradas = []
+            for descripcion, tecnica_obj in tecnicas.items():
+                if re.search(rf"{descripcion}", bloque_tecnicas, re.IGNORECASE):
+                    # Guardamos el id de la técnica encontrada
+                    tecnicas_encontradas.append(tecnica_obj.id)
+            datos["Tecnicas"] = tecnicas_encontradas if tecnicas_encontradas else None
+        else:
+            datos["Tecnicas"] = None
+
     return datos
+
+
 
 
 def codigoRubro(request, analito_id: int = None):
