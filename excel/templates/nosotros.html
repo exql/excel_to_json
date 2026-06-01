@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conver Lab</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'CSS/stylesheet.css' %}">
+    <script src="{% static 'JS/script.js' %}" defer></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <header class="navbar responsive-navbar">
+        <a href="{% url 'index' %}" class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" width="50">
+        </a>
+        <div class="menu-icon" onclick="toggleMenu()">
+            <img src="{% static 'images/menu-icon.svg' %}" alt="Menú">
+        </div>
+        <ul class="nav-links">
+            <li><a href="{% url 'index' %}">Inicio</a></li>
+            <li><a href="{% url 'planes' %}">Planes</a></li>
+            <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            <li><a href="{% url 'preguntas' %}">Preguntas</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}" class="logout-button">Cerrar Sesión</a></li>
+            {% endif %}
+    
+        </ul>
+    </header>
+
+ <!-- Contenido principal -->
+ <main class="main-container">
+    <section class="central-content">
+        <div class="info-box"> <!-- Usa una clase para el recuadro si es necesario -->
+            <h1>Sobre Nosotros</h1>
+            <p>Somos una <strong>PyME</strong> dedicada al desarrollo de herramientas informáticas para pequeñas empresas. Nuestro objetivo es optimizar la gestión de datos y procesos a través de soluciones eficientes y accesibles.</p>
+
+            <p>Tabajando junto a otros laboratorios pertenecientes a la <strong>Red Nacional de Laboratorios</strong>, nos dimos cuenta de que muchos otros enfrentaban los mismos desafíos. Así nació <strong>CONVERLAB</strong>, una herramienta diseñada para ayudar a los usuarios a gestionar sus resultados y realizar la carga masiva de datos en el sistema <strong>GRECERT</strong> de <strong>SENASA</strong>.</p>
+
+            <p>Nuestra misión es ofrecer una solución confiable, intuitiva y escalable, permitiendo a los laboratorios mejorar su eficiencia y precisión operativa.</p>
+        </div>
+    </section>
+</main>
+
+
+</body>
+</html>

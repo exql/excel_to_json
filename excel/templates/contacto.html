@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conver Lab</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'CSS/stylesheet.css' %}">
+    <script src="{% static 'JS/script.js' %}" defer></script>
+    <style>
+        .contact-info {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .contact-item {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .qr-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="{% url 'index' %}" alt="CONVERLAB">
+        </div>
+        <ul class="nav-links">
+            <li><a href="{% url 'index' %}">Inicio</a></li>
+            <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+            <li><a href="{% url 'planes' %}">Planes</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}" class="logout-button">Cerrar Sesión</a></li>
+            {% endif %}
+              
+        </ul>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-container">
+        <section class="central-content">
+            <div class="info-box"> <!-- Caja con estilos para el contenido -->
+                <h1>Contáctenos</h1>
+                <p>Por el momento atendemos únicamente por correo electrónico o WhatsApp.</p>
+                <p>Para solicitar usuario y clave o asistencia técnica, escanea el QR y escríbenos por <strong>WhatsApp</strong>.</p>
+                <p>Por favor, indícanos tu <strong>nombre</strong>, <strong>nombre del laboratorio</strong> y un <strong>teléfono</strong> donde podamos llamarte.</p>
+                <p>Un asesor se pondrá en contacto a la brevedad.</p>
+
+                <!-- Sección de Contacto -->
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <h2>WhatsApp</h2>
+                        <p> 011-15-2796-5722</p>
+                    </div>
+                    <div class="contact-item">
+                        <h2>Correo Electrónico</h2>
+                        <p><strong>ayudaconverlab@gmail.com</strong></p>
+                    </div>
+                </div>
+
+                <!-- QR debajo de la información -->
+                <div class="qr-container">
+                    <img src="{% static 'images/qr_whatsapp.jpg' %}" alt="Escanear QR para WhatsApp" width="450">
+                </div>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

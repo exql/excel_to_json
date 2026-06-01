@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VetData</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'CSS/stylesheet.css' %}">
+    <script src="{% static 'JS/script.js' %}" defer></script>
+
+    <!-- Matomo -->
+    <script>
+      var _paq = window._paq = window._paq || [];
+      /* Si el usuario está autenticado, se envía su username a Matomo */
+      {% if user.is_authenticated %}
+        _paq.push(['setUserId', '{{ user.username }}']);
+      {% endif %}
+      _paq.push(['trackPageView']);
+      _paq.push(['enableLinkTracking']);
+      /* Activa el Heartbeat Timer cada 15 segundos */
+      _paq.push(['enableHeartBeatTimer', 15]);
+
+      (function() {
+        var u="//analytics.vetdata.com.ar/";
+        _paq.push(['setTrackerUrl', u+'matomo.php']);
+        _paq.push(['setSiteId', '1']);
+        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+      })();
+    </script>
+    <!-- End Matomo Code -->
+
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar responsive-navbar">
+        <!--a href="{% url 'index' %}" class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" width="50">
+        </a-->
+        <div class="menu-icon" onclick="toggleMenu()">
+            <img src="{% static 'images/menu-icon.svg' %}" alt="Menú">
+        </div>
+        <ul class="nav-links">
+            <!-- <li><a href="{% url 'planes' %}">Planes</a></li>-->
+            
+            <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+            <li><a href="{% url 'tutoriales' %}">Tutoriales</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}" class="logout-button">Cerrar Sesión</a></li>
+            {% endif %}
+    
+        </ul>
+    </header>
+
+    <!-- Cuerpo principal con columnas laterales -->
+    <main class="main-container">
+        <!-- Cuerpo central -->
+        <section class="central-content">
+            <div class="funcion-container">
+                <div class="ad-box">
+                    <h2> Carga masiva Actas Manuales</h2>
+                    <h4>En este módulo vas a poder crear el archivo JSON para reportar en forma masiva.</h4>
+                    <h3>Crear JSON</h3>
+                    <div class="button-group">
+                        <a href="{% url 'aie' %}" class="btn">A.I.E</a>
+                        <a href="{% url 'brucelosis' %}" class="btn">Brucelosis</a>
+                        <a href="{% url 'triqui' %}" class="btn">Triquinelosis</a>
+                    </div>
+                </div>
+                
+                <div class="ad-box">
+                    <h2>Actas Digitales</h2>
+                    <h4>Este módulo es para procesar las actas Digitales para los rubros de Sanidad Animal.</h4>
+                    <h3>Procesar Acta</h3>
+                    
+                    <div class="button-group">
+                        <a href="{% url 'actadigital_AIE2' %}" class="btn">A.I.E</a>
+                        <a href="{% url 'actadigital_bru2' %}" class="btn">Brucelosis</a>
+                        
+                    </div>
+                </div>
+            </div>
+            
+        </section>
+
+        <!-- Columna derecha - Publicidad -->
+        <aside class="right-column">
+            <div class="ad-box">
+                <h1>Primeros Pasos</h1>
+                <p>En el siguiente PDF podra leer los pasos previos antes de usar VETDATA</p>
+                <a href="{% static 'files/Primeros Pasos.pdf' %}" download>📥 Descargar Primeros Pasos</a>
+            </div>
+            <div class="ad-box">
+                <p>Espacio 2B</p>
+            </div>
+        </aside>
+    </main>
+
+</body>
+</html>

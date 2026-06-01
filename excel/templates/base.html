@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Conver Lab{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'CSS/stylesheet.css' %}">
+    <script src="{% static 'JS/script.js' %}" defer></script>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar responsive-navbar">
+        <a href="{% url 'index' %}" class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" width="50">
+        </a>
+        <div class="menu-icon" onclick="toggleMenu()">
+            <img src="{% static 'images/menu-icon.svg' %}" alt="Menú">
+        </div>
+        <ul class="nav-links">
+            <li><a href="{% url 'index' %}">Inicio</a></li>
+            <li><a href="{% url 'planes' %}">Planes</a></li>
+            <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}" class="logout-button">Cerrar Sesión</a></li>
+            {% endif %}
+    
+            {% block extra_nav %}
+            {% endblock %}
+        </ul>
+    </header>
+
+    <!-- Cuerpo principal -->
+    <main class="main-container">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+</body>
+</html>

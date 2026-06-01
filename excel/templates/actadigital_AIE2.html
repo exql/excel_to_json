@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acta Digital AIE</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'CSS/stylesheet.css' %}">
+    <script src="{% static 'JS/script.js' %}" defer></script>
+
+    <!-- Matomo -->
+    <script>
+        var _paq = window._paq = window._paq || [];
+        /* Si el usuario está autenticado, se envía su username a Matomo */
+        {% if user.is_authenticated %}
+        _paq.push(['setUserId', '{{ user.username }}']);
+        {% endif %}
+        _paq.push(['trackPageView']);
+        _paq.push(['enableLinkTracking']);
+        (function () {
+            var u = "//analytics.vetdata.com.ar/";
+            _paq.push(['setTrackerUrl', u + 'matomo.php']);
+            _paq.push(['setSiteId', '1']);
+            var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
+            g.async = true; g.src = u + 'matomo.js'; s.parentNode.insertBefore(g, s);
+        })();
+    </script>
+    <!-- End Matomo Code -->
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar responsive-navbar">
+        <!--a href="{% url 'index' %}" class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" width="50">
+        </a-->
+        <div class="menu-icon" onclick="toggleMenu()">
+            <img src="{% static 'images/menu-icon.svg' %}" alt="Menú">
+        </div>
+        <ul class="nav-links">
+            <li><a href="{% url 'index' %}">Inicio</a></li>
+            <!--<li><a href="{% url 'planes' %}">Planes</a></li>-->
+            <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+            <li><a href="{% url 'tutoriales' %}">Tutoriales</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}" class="logout-button">Cerrar Sesión</a></li>
+            {% endif %}
+        </ul>
+    </header>
+
+    <!-- Cuerpo principal con columnas laterales -->
+    <main class="main-container">
+
+        <!-- Columna izquierda - Publicidad -->
+        <aside class="left-column">
+            <div class="ad-box">
+                <h2>Plantilla Excel para Actas Digitales</h2>
+                <p>Contiene todos los campos requeridos por el GRECERT</p>
+                <p>Complete todos los campos y mantenga la extensión del archivo ".xls"</p>
+                <a href="{% static 'files/Plantilla_Acta Digital_V1.xlsx' %}" download class="btn">📥 Descargar</a>
+            </div>
+        </aside>
+
+        <!-- Cuerpo central -->
+        <section class="central-content">
+            <!-- Formulario para subir PDFs -->
+            <h1>Procesar las Actas Digitales de AIE</h1>
+            <form action="/convertir_Acta_AIE/" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Bloques para 5 archivos PDF adaptados -->
+                <div class="plans-container">
+
+                    <!-- Acta 1 -->
+                    <div class="plan">
+                        <h3>Acta 1</h3>
+                        <div class="form-group">
+                            <label for="informe1">Número de informe:</label>
+                            <input type="text" id="informe1" name="informe1" maxlength="50" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fechaRecepcion1">Fecha de Recepción:</label>
+                            <input type="date" id="fechaRecepcion1" name="fechaRecepcion1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fechaInicio1">Fecha Inicio:</label>
+                            <input type="date" id="fechaInicio1" name="fechaInicio1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fechaFin1">Fecha Fin:</label>
+                            <input type="date" id="fechaFin1" name="fechaFin1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fechaVencimiento1">Vencimiento Antigeno/Kit:</label>
+                            <input type="date" id="fechaVencimiento1" name="fechaVencimiento1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="resultadoLetra1">Código Resultado:</label>
+                            <input type="text" id="resultadoLetra1" name="resultadoLetra1" maxlength="5">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="antigeno1">Antigeno/Kit:</label>
+                            <input type="text" id="antigeno1" name="antigeno1" maxlength="25">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="marcaAntigeno1">Marca Antigeno/Kit:</label>
+                            <input type="text" id="marcaAntigeno1" name="marcaAntigeno1" maxlength="25">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lote1">Lote:</label>
+                            <input type="number" id="lote1" name="lote1" maxlength="25">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="estampilla1">Estampilla:</label>
+                            <input type="number" id="estampilla1" name="estampilla1" maxlength="25">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="codigoDT1">Código DT:</label>
+                            <input type="number" id="codigoDT1" name="codigoDT1" maxlength="20">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="acta1">Adjuntar PDF:</label>
+                            <input type="file" id="acta1" name="acta1" accept=".pdf" required>
+                        </div>
+                    </div>
+
+
+                    <!-- Acta 2 -->
+                    <div class="plan">
+                        <h3>Acta 2</h3>
+                        <div class="form-group">
+                            <label for="informe2">Número de informe:</label>
+                            <input type="text" id="informe2" name="informe2" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaRecepcion2">Fecha de Recepción:</label>
+                            <input type="date" id="fechaRecepcion2" name="fechaRecepcion2">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaInicio2">Fecha Inicio:</label>
+                            <input type="date" id="fechaInicio2" name="fechaInicio2">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFin2">Fecha Fin:</label>
+                            <input type="date" id="fechaFin2" name="fechaFin2">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaVencimiento2">Vencimiento Antigeno/Kit:</label>
+                            <input type="date" id="fechaVencimiento2" name="fechaVencimiento2">
+                        </div>
+                        <div class="form-group">
+                            <label for="resultadoLetra2">Código Resultado:</label>
+                            <input type="text" id="resultadoLetra2" name="resultadoLetra2" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="antigeno2">Antigeno/Kit:</label>
+                            <input type="text" id="antigeno2" name="antigeno2" maxlength="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="marcaAntigeno2">Marca Antigeno/Kit:</label>
+                            <input type="text" id="marcaAntigeno2" name="marcaAntigeno2" maxlength="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="lote2">Lote:</label>
+                            <input type="number" id="lote2" name="lote2" maxlength="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="estampilla2">Estampilla:</label>
+                            <input type="number" id="estampilla2" name="estampilla2" maxlength="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="codigoDT2">Código DT:</label>
+                            <input type="number" id="codigoDT2" name="codigoDT2" maxlength="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="acta2">Adjuntar PDF:</label>
+                            <input type="file" id="acta2" name="acta2" accept=".pdf">
+                        </div>
+                    </div>
+
+
+                    <!-- Acta 3 -->
+                    <div class="plan">
+                        <h3>Acta 3</h3>
+                        <div class="form-group">
+                            <label for="informe3">Número de informe:</label>
+                            <input type="text" id="informe3" name="informe3" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaRecepcion3">Fecha de Recepción:</label>
+                            <input type="date" id="fechaRecepcion3" name="fechaRecepcion3">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaInicio3">Fecha Inicio:</label>
+                            <input type="date" id="fechaInicio3" name="fechaInicio3">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFin3">Fecha Fin:</label>
+                            <input type="date" id="fechaFin3" name="fechaFin3">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaVencimiento3">Vencimiento Antigeno/Kit:</label>
+                            <input type="date" id="fechaVencimiento3" name="fechaVencimiento3">
+                        </div>
+                        <div class="form-group">
+                            <label for="resultadoLetra3">Código Resultado:</label>
+                            <input type="text" id="resultadoLetra3" name="resultadoLetra3" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="antigeno3">Antigeno/Kit:</label>
+                            <input type="text" id="antigeno3" name="antigeno3" maxlength="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="marcaAntigeno3">Marca Antigeno/Kit:</label>
+                            <input type="text" id="marcaAntigeno3" name="marcaAntigeno3" maxlength="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="lote3">Lote:</label>
+                            <input type="number" id="lote3" name="lote3" maxlength="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="estampilla3">Estampilla:</label>
+                            <input type="number" id="estampilla3" name="estampilla3" maxlength="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="codigoDT3">Código DT:</label>
+                            <input type="number" id="codigoDT3" name="codigoDT3" maxlength="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="acta3">Adjuntar PDF:</label>
+                            <input type="file" id="acta3" name="acta3" accept=".pdf">
+                        </div>
+                    </div>
+
+
+                    <!-- Acta 4 -->
+                    <div class="plan">
+                        <h3>Acta 4</h3>
+                        <div class="form-group">
+                            <label for="informe4">Número de informe:</label>
+                            <input type="text" id="informe4" name="informe4" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaRecepcion4">Fecha de Recepción:</label>
+                            <input type="date" id="fechaRecepcion4" name="fechaRecepcion4">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaInicio4">Fecha Inicio:</label>
+                            <input type="date" id="fechaInicio4" name="fechaInicio4">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFin4">Fecha Fin:</label>
+                            <input type="date" id="fechaFin4" name="fechaFin4">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaVencimiento4">Vencimiento Antigeno/Kit:</label>
+                            <input type="date" id="fechaVencimiento4" name="fechaVencimiento4">
+                        </div>
+                        <div class="form-group">
+                            <label for="resultadoLetra4">Código Resultado:</label>
+                            <input type="text" id="resultadoLetra4" name="resultadoLetra4" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="antigeno4">Antigeno/Kit:</label>
+                            <input type="text" id="antigeno4" name="antigeno4" maxlength="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="marcaAntigeno4">Marca Antigeno/Kit:</label>
+                            <input type="text" id="marcaAntigeno4" name="marcaAntigeno4" maxlength="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="lote4">Lote:</label>
+                            <input type="number" id="lote4" name="lote4" maxlength="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="estampilla4">Estampilla:</label>
+                            <input type="number" id="estampilla4" name="estampilla4" maxlength="25">
+                        </div>
+                        <div class="form-group">
+                            <label for="codigoDT4">Código DT:</label>
+                            <input type="number" id="codigoDT4" name="codigoDT4" maxlength="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="acta4">Adjuntar PDF:</label>
+                            <input type="file" id="acta4" name="acta4" accept=".pdf">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Botones uno al lado del otro -->
+                <div class="buttons-container">
+
+                    <!-- Botón para Excel -->
+                    <button type="submit" class="btn" formaction="/convertir_Acta_AIE/">Excel</button>
+
+                    <!-- Reemplazar el endpoint-->
+                    <button type="submit" class="btn" formaction="/actaAIE_JSON/">JSON</button>
+                </div>
+
+                
+            </form>
+
+            <div class="ad-box">
+                    <h2>Adjuntar Excel del acta digital</h2>
+                    <form action="/crear_json_AIE_digital/" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <!--label for="archivo">Selecciona un archivo Excel:</label--><br>
+                        <input type="file" id="archivo" name="archivo" accept=".xls,.xlsx"><br><br>
+                        <button type="submit">Converti a JSON</button>
+                    </form>
+                </div>
+
+        
+        </section>
+
+        <!-- Columna derecha - Publicidad -->
+        <aside class="right-column">
+            <div class="ad-box">
+                <h1>Listado de Códigos de A.I.E.</h1>
+                <p>Aquí podrá descargar el Listado de Códigos para completar el excel de A.I.E.</p>
+            </div>
+        </aside>
+    </main>
+
+</body>
+
+</html>

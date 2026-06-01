@@ -1,0 +1,520 @@
+/* Estilo general */
+body {
+  margin: 0;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background-color: #FFFFFF;
+  color: #333;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #F5F5F5;
+  padding: 15px 30px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo img {
+  vertical-align: middle;
+}
+
+/* Enlaces de navegación */
+.nav-links {
+  list-style: none;
+  display: flex;
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links li {
+  margin-left: 25px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #007AFF;
+  font-weight: bold;
+  padding: 8px 15px;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.nav-links a:hover {
+  background-color: rgba(0, 122, 255, 0.1);
+}
+
+/* Layout general (página principal) */
+.main-container {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 20px;
+}
+
+/* Columna izquierda */
+.left-column {
+  flex: 1;
+  padding: 20px;
+  text-align: center;
+  border-right: 2px solid #E0E0E0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Columna derecha */
+.right-column {
+  flex: 1;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Contenido central */
+.central-content {
+  flex: 2;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Caja publicitaria */
+.ad-box {
+  background-color: #FAFAFA;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Grupo de botones */
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.buttons-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* dos columnas iguales */
+  gap: 20px; /* espacio entre los botones */
+  width: 100%; /* ocupa todo el ancho disponible */
+  margin-top: 20px; /* separación respecto a las actas */
+}
+
+
+/* Botones planos estilo input */
+.btn {
+  background-color: #007AFF;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 4px;
+  /* Menos redondeado */
+  text-decoration: none;
+  font-weight: bold;
+  border: 1px solid #0066d6;
+  font-size: 16px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    width: 100%; /* cada botón ocupa toda su columna */
+  box-sizing: border-box;
+}
+
+
+.btn:hover {
+  background-color: #0056B3;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos de formulario */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+
+button {
+  padding: 12px;
+  border: 1px solid #E0E0E0;
+  border-radius: 4px;
+  background-color: #007AFF;
+  color: #333;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+input:focus,
+button:focus {
+  border-color: #007AFF;
+}
+
+button {
+  cursor: pointer;
+  font-weight: bold;
+  background-color: #007AFF;
+  color: white;
+}
+
+button:hover {
+  background-color: #0056B3;
+}
+
+/* Layout de login */
+.login-layout {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+  margin: 40px 20px;
+}
+
+/* Panel izquierdo (video) */
+.left-panel {
+  flex: 1;
+  max-width: 500px;
+  padding: 20px;
+}
+
+.left-panel h3 {
+  margin-top: 0;
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+/* Panel derecho (formulario) */
+.right-panel {
+  flex: 1;
+  max-width: 500px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.right-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.right-panel label {
+  text-align: left;
+  font-weight: bold;
+}
+
+/* Inputs dentro de panel */
+.right-panel input {
+  /*width: 100%;*/
+  padding: 12px;
+  border: 1px solid #E0E0E0;
+  border-radius: 4px;
+  /*background-color: #007AFF;*/
+  font-size: 16px;
+}
+
+.right-panel button {
+  /*width: 100%;*/
+  padding: 12px;
+  border: 1px solid #E0E0E0;
+  border-radius: 4px;
+  background-color: #007AFF;
+  font-size: 16px;
+}
+
+/* Sección QR */
+.qr-section {
+  text-align: center;
+  margin-top: 40px;
+}
+
+/* Sección de planes */
+.plans-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* dos columnas iguales */
+  gap: 20px; /* espacio entre las actas */
+  justify-content: center; /* centra el grid en la página */
+}
+
+/* Agrupar cada campo dentro del recuadro */
+.plan .form-group {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  /* Fuerza que label e input estén uno debajo del otro */
+  margin-bottom: 1px;
+  /* Espacio entre grupos */
+  text-align: left;
+  /* Alinea el contenido a la izquierda */
+}
+
+
+.plan {
+  background-color: #FAFAFA;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  padding: 20px;
+  width: 430px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* --- NUEVO: grid de dos columnas --- */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* dos columnas iguales */
+  gap: 20px;
+  /* espacio entre columnas */
+}
+.plan h3 {
+ grid-column: span 2; /* el título ocupa las dos columnas */
+  margin: 0 0 15px;
+  font-size: 24px;
+  color: #333;
+
+}
+
+
+.plan label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  /* Espacio entre label e input */
+}
+
+.plan input {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+
+
+
+.plan:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.plan.featured {
+  border: 2px solid #007AFF;
+  background-color: #F0F6FF;
+}
+
+
+
+.plan .price {
+  font-size: 32px;
+  font-weight: bold;
+  color: #007AFF;
+  margin-bottom: 20px;
+}
+
+.plan .price span {
+  font-size: 16px;
+  font-weight: normal;
+  color: #666;
+}
+
+.plan ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  text-align: left;
+}
+
+.plan ul li {
+  padding: 8px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.plan .btn {
+  display: inline-block;
+  width: 100%;
+  box-sizing: border-box;
+}
+.comp-block {
+  display: none;
+  margin-top: 15px;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+.comp-block.visible {
+  background-color: #FAFAFA;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  padding: 20px;
+  width: 430px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* --- NUEVO: grid de dos columnas --- */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* dos columnas iguales */
+  gap: 20px;
+  /* espacio entre columnas */
+}
+.comp-block h3 {
+ grid-column: span 2; /* el título ocupa las dos columnas */
+  margin: 0 0 15px;
+  font-size: 24px;
+  color: #333;
+
+}
+
+/* Responsividad general */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 10px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nav-links {
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .nav-links li {
+    margin-left: 15px;
+    margin-bottom: 10px;
+  }
+
+  .main-container {
+    flex-direction: column;
+  }
+
+  .left-column,
+  .right-column,
+  .central-content {
+    border-right: none;
+    box-shadow: none;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .login-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .left-panel,
+  .right-panel {
+    max-width: 100%;
+  }
+
+  .plans-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .plan {
+    width: 100%;
+    max-width: 350px;
+  }
+}
+
+/* Ajustes para navbar en pantallas pequeñas */
+.responsive-navbar .menu-icon {
+  display: none;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .responsive-navbar .nav-links {
+    display: none;
+  }
+
+  .responsive-navbar .menu-icon {
+    display: block;
+  }
+}
+
+/* Mostrar menú cuando está activo */
+.responsive-navbar.active .nav-links {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-box {
+  background-color: #F5F5F5;
+  border: 2px solid #E0E0E0;
+  border-radius: 8px;
+  padding: 25px;
+
+}
+
+/* Hoja de video*/
+/* Contenedor de la página */
+.tutorials-container {
+  padding: 20px;
+  text-align: center;
+}
+
+/* Título superior */
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* Grid de videos */
+.videos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+/* Recuadro individual de cada video */
+.video-box {
+  background-color: #F5F5F5;
+  border: 2px solid #E0E0E0;
+  padding: 15px;
+  border-radius: 8px;
+  width: 30%;
+  /* Ocupa aproximadamente un tercio del ancho */
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Descripción debajo de los videos */
+.video-description {
+  font-size: 14px;
+  color: #333;
+  text-align: center;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #F5F5F5;
+  border-radius: 5px;
+}
+
+/* Responsividad: en pantallas pequeñas los videos se organizan en dos por fila */
+@media (max-width: 1024px) {
+  .video-box {
+    width: 45%;
+    /* Dos videos por fila en tablets y pantallas medianas */
+  }
+}
+
+@media (max-width: 768px) {
+  .videos-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .video-box {
+    width: 90%;
+    /* Un video por fila en dispositivos móviles */
+  }
+}

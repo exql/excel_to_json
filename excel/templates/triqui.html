@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vet-Data Triquinelosis</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'CSS/stylesheet.css' %}">
+    <script src="{% static 'JS/script.js' %}" defer></script>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar responsive-navbar">
+        <a href="{% url 'index' %}" class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" width="50">
+        </a>
+        <div class="menu-icon" onclick="toggleMenu()">
+            <img src="{% static 'images/menu-icon.svg' %}" alt="Menú">
+        </div>
+        <ul class="nav-links">
+            <li><a href="{% url 'index' %}">Inicio</a></li>
+            <!--<li><a href="{% url 'planes' %}">Planes</a></li>-->
+            <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            <li><a href="{% url 'preguntas' %}">Preguntas</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}" class="logout-button">Cerrar Sesión</a></li>
+            {% endif %}
+    
+        </ul>
+    </header>
+
+    <!-- Cuerpo principal con columnas laterales -->
+    <main class="main-container">
+         <!-- Columna izquierda - Publicidad -->
+         <aside class="left-column">
+            <div class="ad-box">
+                <h2>Plantilla Excel para Triquinelosis</h2>
+                <p>Descargue este excel que contiene todos los campos requeridos por el GRECERT</p>
+                <p>Complete todos los campos y mantenga la extención del archivo ".xlsx"</p>    
+                <a href="{% static 'files/Plantilla_Triquinelosis.xlsx' %}" download>📥 Descargar Plantilla</a>
+
+            </div>
+            
+        </aside>
+     
+        <!-- Cuerpo central -->
+        <section class="central-content">
+            <h1>Antes de empezar</h1>
+            <p>En el siguiente video podrá ver los puntos importantes para generar el JSON de Triquinelosis</p>
+           
+<!-- Formulario para subir Excel -->
+            <h1>Adjuntar el Excel de Triquinelosis</h1>
+            <form action="/convertir_Triqui/" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <!--label for="archivo">Selecciona un archivo Excel:</label--><br>
+                <input type="file" id="archivo" name="archivo" accept=".xls,.xlsx" required><br><br>
+                <button type="submit">Converti a JSON</button>
+            </form>
+
+            <h1>Crear JSON</h1>
+            <div class="button-group"> 
+                <a href="{% url 'aie' %}" class="btn">A.I.E</a>               
+                <a href="{% url 'brucelosis' %}" class="btn">Brucelosis</a>                
+            </div>
+            
+        </section>
+
+         <!-- Columna derecha - Publicidad -->
+         <aside class="right-column">
+            <div class="ad-box">
+                <h1>Antes de empezar</h1>
+                <p>Aquí podrás acceder a distintos manuales y guías para comenzar.</p>
+            </div>
+            
+        </aside>
+    </main>
+
+
+    </main>
+
+</body>
+</html>

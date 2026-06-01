@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Registro de Usuario{% endblock %}
+
+{% block extra_nav %}
+    {% if user.is_authenticated %}
+        <li><a href="{% url 'logout' %}" class="logout-button">Cerrar Sesión</a></li>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<h2>Registrar Usuario</h2>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Crear Usuario</button>
+</form>
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% endblock %}

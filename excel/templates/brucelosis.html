@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vet-Data Brucelosis</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'CSS/stylesheet.css' %}">
+    <script src="{% static 'JS/script.js' %}" defer></script>
+
+    <!-- Matomo -->
+    <script>
+      var _paq = window._paq = window._paq || [];
+      /* Si el usuario está autenticado, se envía su username a Matomo */
+      {% if user.is_authenticated %}
+        _paq.push(['setUserId', '{{ user.username }}']);
+      {% endif %}
+      _paq.push(['trackPageView']);
+      _paq.push(['enableLinkTracking']);
+      (function() {
+        var u="//analytics.vetdata.com.ar/";
+        _paq.push(['setTrackerUrl', u+'matomo.php']);
+        _paq.push(['setSiteId', '1']);
+        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+      })();
+    </script>
+    <!-- End Matomo Code -->
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar responsive-navbar">
+        <!--a href="{% url 'index' %}" class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" width="50">
+        </a-->
+        <div class="menu-icon" onclick="toggleMenu()">
+            <img src="{% static 'images/menu-icon.svg' %}" alt="Menú">
+        </div>
+        <ul class="nav-links">
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'index' %}">Inicio</a></li>
+            {% endif %}
+            <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+            <li><a href="{% url 'tutoriales' %}">Tutoriales</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}" class="logout-button">Cerrar Sesión</a></li>
+            {% endif %}
+    
+        </ul>
+    </header>
+
+    <!-- Cuerpo principal con columnas laterales -->
+    <main class="main-container">
+         <!-- Columna izquierda - Publicidad -->
+         <aside class="left-column">
+            <div class="ad-box">
+                <h2>Plantilla Excel para Brucelosis</h2>
+                <p>Descargue este excel que contiene todos los campos requeridos por el GRECERT</p>
+                <p>Complete todos los campos y mantenga la extención del archivo ".xls"</p>    
+                <a href="{% static 'files/Plantilla_Brucelosis_V3.xlsx' %}" download class="btn">📥 Descargar Plantilla</a>
+            </div>
+            
+            <div class="ad-box">
+                <h2>Instructivo para completar el Excel</h2>
+                <p>Descargue el siguiente PDF donde le explican los detalles para completar el EXCEL</p>
+                  
+                <a href="{% static 'files/Carga Masiva Brucelosis.pdf' %}" download class="btn">📥 Descargar Instructivo</a>
+            </div>
+            
+        </aside>
+     
+        <!-- Cuerpo central -->
+        <section class="central-content">
+           <h1>Crear JSON de Brucelosis</h1>
+<!-- Formulario para subir Excel -->
+            <h3>Adjuntar el Excel del acta Manual</h3>
+            <form action="/convertir_bru/" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <!--label for="archivo">Selecciona un archivo Excel:</label--><br>
+                <input type="file" id="archivo" name="archivo" accept=".xls,.xlsx" required><br><br>
+                <button type="submit">Converti a JSON</button>
+            </form>
+
+            <h3>Adjuntar el Excel del acta Digital</h3>
+            <form action="/crear_json_bru_digital/" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <!--label for="archivo">Selecciona un archivo Excel:</label--><br>
+                <input type="file" id="archivo" name="archivo" accept=".xls,.xlsx" required><br><br>
+                <button type="submit">Converti a JSON</button>
+            </form>
+
+            <h2>Crear JSON</h2>
+            <div class="button-group">                
+                <a href="{% url 'aie' %}" class="btn">A.I.E</a>
+                <a href="{% url 'triqui' %}" class="btn">Triquinelosis</a>
+            </div>
+           
+        </section>
+
+         <!-- Columna derecha - Publicidad -->
+         <aside class="right-column">
+            <div class="ad-box">
+                <h2>Listado de Códigos de Brucelosis</h2>
+                <p>Aquí podrá descargar el Listado de Códigos para completar el excel de Brucelosis</p>
+                <a href="{% static 'files/Códigos - Brucelosis.pdf' %}" download class="btn">📥 Descargar Listado de Códigos</a>
+            </div>
+            
+        </aside>
+    </main>
+
+
+    </main>
+
+</body>
+</html>

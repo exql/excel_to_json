@@ -6,8 +6,8 @@ services:
     environment:
       MYSQL_USER: dbadmin
       MYSQL_PASSWORD: Admin2024
-      MYSQL_DATABASE: tJournalDatabase
-      MYSQL_ROOT: tJournal_root
+      MYSQL_DATABASE: excelDatabase
+      MYSQL_ROOT: excel_root
       MYSQL_ROOT_PASSWORD: tJournal$2024
     restart:
       unless-stopped
@@ -21,6 +21,8 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
+      - ./static:/code/static  # Agrega esta línea para montar la carpeta estática
+
     ports:
       - "8000:8000"
     depends_on:

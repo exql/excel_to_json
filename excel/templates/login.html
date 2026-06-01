@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conver Lab - Login</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'CSS/stylesheet.css' %}">
+    <script src="{% static 'JS/script.js' %}" defer></script>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar responsive-navbar">
+        <a href="{% url 'index' %}" class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Logo Conver Lab" width="50">
+        </a>
+        <div class="menu-icon" onclick="toggleMenu()">
+            <img src="{% static 'images/menu-icon.svg' %}" alt="Menú">
+        </div>
+        <ul class="nav-links">
+            <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+            <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            <li><a href="{% url 'preguntas' %}">Preguntas</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}" class="logout-button">Cerrar Sesión</a></li>
+            {% endif %}
+
+        </ul>
+    </header>
+
+    <!-- Cuerpo del login -->
+    <main class="login-layout">
+        <div class="left-panel">
+            <h3>Te presentamos cómo funciona nuestro sistema</h3>
+            <iframe width="100%" height="315" src="https://www.youtube.com/embed/TU_CODIGO_VIDEO" frameborder="0"
+                allowfullscreen></iframe>
+        </div>
+        <div class="right-panel">
+            {% if error %}
+            <p style="color: red;">{{ error }}</p>
+            {% endif %}
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <label for="username">Usuario:</label>
+                <input type="text" name="username" id="username" required>
+                <label for="password">Contraseña:</label>
+                <input type="password" name="password" id="password" required>
+                <button type="submit">Iniciar Sesión</button>
+            </form>
+        </div>
+    </main>
+
+
+
+    <!-- Sección QR -->
+    <section class="qr-section">
+        <h1 style="color: red;">"TRABAJOS DE MANTENIMIENTO"</h1>
+        <h2 style="color: red;">Los días Sabado 30 y Domingo 31 de Mayo. </h2>
+        <h2 style="color: red;"> El servicio puede presentar interrupciones</h2>
+        <h2 style="color: red;"> Estaremos trabajando en la implementación de mejoras</h2>
+        <h2>Solicitá tu Usuario y Clave Gratis!</h2>
+        <h4>Escanea el QR y contactanos por Whatsapp</h4>
+        <img src="{% static 'images/qr_whatsapp.jpg' %}" alt="Escanea el código QR para solicitar acceso" width="450">
+    </section>
+
+</body>
+
+</html>

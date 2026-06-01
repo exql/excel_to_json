@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conver Lab</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'CSS/stylesheet.css' %}">
+    <script src="{% static 'JS/script.js' %}" defer></script>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar responsive-navbar">
+        <a href="{% url 'index' %}" class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" width="50">
+        </a>
+        <div class="menu-icon" onclick="toggleMenu()">
+            <img src="{% static 'images/menu-icon.svg' %}" alt="Menú">
+        </div>
+        <ul class="nav-links">
+            <li><a href="{% url 'index' %}">Inicio</a></li>
+            <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            <li><a href="{% url 'preguntas' %}">Preguntas</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}" class="logout-button">Cerrar Sesión</a></li>
+            {% endif %}
+    
+        </ul>
+    </header>
+
+    <!-- Cuerpo principal - Sección de Planes -->
+    <main class="main-container">
+        <section class="central-content">
+            <h1>Nuestros Planes</h1>
+            <div class="plans-container">
+                <div class="plan">
+                    <h3>Mensual</h3>
+                    <div class="price">$20.000<span>/mes</span></div>
+                    <ul>
+                        <li>Reportes sin límites</li>
+                        <li>Soporte por email</li>
+                        <li>1 usuario</li>
+                    </ul>
+                    <a href="#" class="btn">Seleccionar</a>
+                </div>
+                <div class="plan featured">
+                    <h3>Anual</h3>
+                    <div class="price">$200.000<span>/año</span></div>
+                    <ul>
+                        <li>Acceso completo</li>
+                        <li>Reportes sin límites</li>
+                        <li>Soporte prioritario</li>
+                        <li>Soporte por WhatsApp</li>
+                        <li>Soporte por email</li>
+                        <li>1 usuario</li>
+                    </ul>
+                    <a href="#" class="btn">Seleccionar</a>
+                </div>
+                <div class="plan">
+                    <h3>Clases Particulares GRECERT</h3>
+                    <div class="price">$40.000<span>/clase</span></div>
+                    <ul>
+                        <li>Clase virtual</li>
+                        <li>2 Hs de duración</li>
+                        <li>Manuales personalizados</li>
+                        <li>Ejercicios prácticos con reportes de ejemplos</li>
+                    </ul>
+                    <a href="#" class="btn">Seleccionar</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

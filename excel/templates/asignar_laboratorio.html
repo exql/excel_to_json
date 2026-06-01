@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Asignar Laboratorio{% endblock %}
+
+{% block content %}
+<h2>Asignar Laboratorio a {{ usuario.username }}</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <fieldset>
+        <legend>Datos del Laboratorio</legend>
+        {{ form.non_field_errors }}
+
+        {% for field in form %}
+        <div style="margin-bottom: 12px;">
+            <label for="{{ field.id_for_label }}">{{ field.label }}:</label><br>
+            {{ field }}
+            {{ field.errors }}
+        </div>
+        {% endfor %}
+    </fieldset>
+
+    <hr>
+
+    <fieldset>
+        <legend>Ensayos Asignados</legend>
+        {{ ensayo_formset.management_form }}
+
+        <div id="ensayo-formset">
+            {% for form in ensayo_formset %}
+            <div class="ensayo-form" style="margin-bottom: 16px; border: 1px solid #ddd; padding: 10px;">
+                <label for="{{ form.ensayo.id_for_label }}">Ensayo:</label><br>
+                {{ form.ensayo }}<br><br>
+
+                <label for="{{ form.codigo_ensayo.id_for_label }}">Código del Ensayo:</label><br>
+                {{ form.codigo_ensayo }}<br><br>
+
+                <label for="{{ form.DELETE.id_for_label }}">Eliminar:</label>
+                {{ form.DELETE }}
+            </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" id="add-ensayo">➕ Agregar otro ensayo</button>
+    </fieldset>
+
+    <br>
+    <button type="submit">Guardar Laboratorio y Ensayos</button>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const formsetDiv = document.getElementById("ensayo-formset");
+        const addBtn = document.getElementById("add-ensayo");
+
+        let totalForms = document.getElementById("id_form-TOTAL_FORMS");
+
+        addBtn.addEventListener("click", function () {
+            const formCount = parseInt(totalForms.value);
+            const firstForm = document.querySelector(".ensayo-form");
+            const newForm = firstForm.cloneNode(true);
+
+            newForm.innerHTML = newForm.innerHTML.replaceAll(`-0-`, `-${formCount}-`);
+            newForm.querySelectorAll("input, select").forEach(input => {
+                input.value = "";
+            });
+
+            formsetDiv.appendChild(newForm);
+            totalForms.value = formCount + 1;
+        });
+    });
+</script>
+{% endblock %}

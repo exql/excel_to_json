@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load extras %}
+{% block content %}
+
+<h2>Lista de Usuarios y sus Laboratorios</h2>
+
+{% if perfiles %}
+    <ul>
+    {% for perfil in perfiles %}
+        <li style="margin-bottom: 24px;">
+            <strong>Usuario:</strong> {{ perfil.usuario.username }} - {{ perfil.usuario.email }}<br>
+
+            {% if perfil.datos_lab %}
+                <strong>Laboratorio:</strong> {{ perfil.datos_lab.nombreLab }}<br>
+                <strong>Número de Lab:</strong> {{ perfil.datos_lab.numLab }}<br>
+                <strong>CUIT:</strong> {{ perfil.datos_lab.cuit }}<br>
+                <strong>Teléfono:</strong> {{ perfil.datos_lab.telefono }}<br>
+                <strong>Director Técnico:</strong> {{ perfil.datos_lab.directorTecnico }}<br>
+
+                {% if ensayos_por_lab|get_item:perfil.datos_lab.id %}
+                    <strong>Ensayos Asignados:</strong>
+                    <ul>
+                    {% for ensayo in ensayos_por_lab|get_item:perfil.datos_lab.id %}
+                        <li>
+                            {{ ensayo.analito }} | {{ ensayo.matriz }} | {{ ensayo.tecnica }}
+                            — <strong>Código Rubro:</strong> {{ ensayo.codigo_rubro }}
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p style="color: orange;">⚠️ No hay ensayos asignados.</p>
+                {% endif %}
+
+                <!-- 🔘 Botón para asignar o editar ensayos -->
+                <a href="{% url 'editar_ensayos' perfil.datos_lab.id %}" class="assign-link">
+                    🧪 Editar ensayos asignados
+                </a><br>
+            {% else %}
+                <p style="color: red;">⚠️ Este usuario aún no tiene laboratorio asignado.</p>
+                <a href="{% url 'asignar_laboratorio' perfil.usuario.id %}" class="assign-link">
+                    Asignar Laboratorio
+                </a>
+            {% endif %}
+
+            <!-- 🔐 Formulario para cambiar contraseña -->
+            <form method="POST" action="{% url 'cambiar_contraseña' perfil.usuario.id %}" style="margin-top: 12px;">
+                {% csrf_token %}
+                <label for="password_{{ perfil.usuario.id }}">Nueva contraseña:</label>
+                <input type="password" name="password" id="password_{{ perfil.usuario.id }}" required>
+                <button type="submit">Actualizar contraseña</button>
+            </form>
+
+            {% if perfil.password_visible %}
+                <p style="color: green;"><strong>Última contraseña asignada:</strong> {{ perfil.password_visible }}</p>
+            {% else %}
+                <p style="color: red;">⚠️ No se ha asignado una contraseña recientemente.</p>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No hay usuarios registrados aún.</p>
+{% endif %}
+
+<a href="{% url 'registrar_usuario' %}">Registrar nuevo usuario</a> |
+<a href="{% url 'usuarios_lista' %}">Actualizar lista</a>
+
+{% endblock %}

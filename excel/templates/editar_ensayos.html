@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Editar Ensayos Asignados a {{ laboratorio.nombreLab }}</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    <div id="ensayo-formset">
+        {% for form in formset %}
+            <div class="ensayo-form" style="border: 1px solid #ccc; padding: 12px; margin-bottom: 12px;">
+                <label>Ensayo:</label><br>
+                {{ form.ensayo }}<br><br>
+
+                <label>Código del Ensayo:</label><br>
+                {{ form.codigo_ensayo }}<br><br>
+
+                <label>Eliminar:</label> {{ form.DELETE }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <button type="button" id="agregar-ensayo">➕ Agregar ensayo</button>
+    <br><br>
+    <button type="submit">Guardar cambios</button>
+</form>
+
+<a href="{% url 'usuarios_lista' %}">← Volver a la lista</a>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const formsetDiv = document.getElementById("ensayo-formset");
+        const addBtn = document.getElementById("agregar-ensayo");
+        const totalForms = document.getElementById("id_form-TOTAL_FORMS");
+
+        addBtn.addEventListener("click", function () {
+            const formCount = parseInt(totalForms.value);
+            const newForm = formsetDiv.children[0].cloneNode(true);
+            const regex = new RegExp(`form-(\\d+)-`, "g");
+
+            newForm.innerHTML = newForm.innerHTML.replaceAll(regex, `form-${formCount}-`);
+            newForm.querySelectorAll("input, select").forEach(input => input.value = "");
+
+            formsetDiv.appendChild(newForm);
+            totalForms.value = formCount + 1;
+        });
+    });
+</script>
+
+{% endblock %}
