@@ -14,7 +14,7 @@ import pdfplumber
 import re
 from django.utils import timezone
 from .models import RegistroExcel, DatosLab, Motivo, SubMotivo, Especie, Categoria, Tecnica
-
+import unicodedata
 
 # Se conecta a la Base de datos y trae los datos de la vista laboratorio_codigo_ensayos que contiene el codigo del rubro
 # y su respectivo analito, matríz y técnica.
@@ -46,15 +46,26 @@ def rubros_lab(request):
 
     return rubrosLab
 
+    # Pasar a mayúsculas, quitar espacios y eliminar tildes
+def normalizar(texto):
+
+    texto = texto.upper().strip()
+    texto = ''.join(
+        c for c in unicodedata.normalize('NFD', texto)
+        if unicodedata.category(c) != 'Mn'
+    )
+    return texto
+
 
 def cargar_db():
     """
     Consulta las tablas de la base de datos y devuelve
-    diccionarios para motivos, submotivos, especies, categorías y técnicas.
+    diccionarios normalizados para motivos, submotivos,
+    especies, categorías y técnicas.
     """
 
-    # Motivos: {descripcion: codigo}
-    motivos = {m.descripcion.strip(): m.codigo for m in Motivo.objects.all()}
+    # Motivos: {descripcion_normalizada: id}
+    motivos = {normalizar(m.descripcion): m.codigo for m in Motivo.objects.all()}
 
     # Submotivos: {descripcion: codigo}
     submotivos = {s.descripcion.strip(): s.codigo for s in SubMotivo.objects.all()}
@@ -62,12 +73,15 @@ def cargar_db():
     # Especies: {descripcion: codigo}
     especies = {e.descripcion.strip(): e.codigo for e in Especie.objects.all()}
 
-    # Categorías: {descripcion: codigo}
-    categorias = {c.descripcion.strip(): c.codigo for c in Categoria.objects.all()}
+    # Especies: {descripcion_normalizada: id}
+    
+    especies = {normalizar(e.descripcion): e.codigo for e in Especie.objects.all()}
 
-    # Técnicas: {descripcion: codigo}
-    tecnicas = {t.tecnica.strip(): t for t in Tecnica.objects.all()}
+    # Categorías: {descripcion_normalizada: id}
+    categorias = {normalizar(c.descripcion): c.codigo for c in Categoria.objects.all()}
 
+    # Técnicas: {descripcion_normalizada: id}
+    tecnicas = {normalizar(t.tecnica): t.id for t in Tecnica.objects.all()}
 
     return motivos, submotivos, especies, categorias, tecnicas
 
@@ -837,10 +851,12 @@ def extraer_datos_pdf(ruta_pdf):
             # Especie
             match_especie = re.search(r"Especie:\s*(.*?)(?=\s*Matriz)", contenido, re.DOTALL)
             if match_especie:
-                especie_texto = match_especie.group(1).strip()
+                especie_texto = normalizar(match_especie.group(1))
+                print(f"Texto extraído del PDF para especie: '{especie_texto}'")
                 datos["Especie"] = especies.get(especie_texto)
-            else:
-                datos["Especie"] = None
+                if datos["Especie"] is None:
+                    print("No hubo coincidencia en la base de datos para esa especie.")
+        
 
             # Categoría (ejemplo: si aparece en el PDF antes de Sexo)
             match_categoria = re.search(r"Categoría:\s*(.*?)(?=\s*Sexo)", contenido, re.DOTALL)
