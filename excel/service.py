@@ -71,7 +71,7 @@ def cargar_db():
     submotivos = {s.descripcion.strip(): s.codigo for s in SubMotivo.objects.all()}
 
     # Especies: {descripcion: codigo}
-    especies = {e.descripcion.strip(): e.codigo for e in Especie.objects.all()}
+    #especies = {e.descripcion.strip(): e.codigo for e in Especie.objects.all()}
 
     # Especies: {descripcion_normalizada: id}
     
