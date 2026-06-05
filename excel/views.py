@@ -20,6 +20,7 @@ from .models import PerfilUsuario, DatosLab, LabEnsayo
 import traceback
 from django.db import connection
 from excel.utils import convertir_tipo 
+from openpyxl.styles import PatternFill
 
 
 
@@ -483,7 +484,7 @@ def convertir_Triqui(request):
     # Convierte el PDF del acta digital de Brucelosis a un excel para completar.
 
 @csrf_exempt
-def convertir_Acta_bru(request):
+def convertir_Acta_bru_old(request):
     # --- Consulta de códigos de rubro ---
     codigo_rubro_bru = codigoRubro(request, 2) # Poner el id del analito en la base de datos.
     codigo_rubro_bru = codigo_rubro_bru[['codigo_rubro', 'tecnica']]
@@ -1289,7 +1290,7 @@ def excel_GRECERT(request):
 
 
 @csrf_exempt
-def convertir_Acta_bru_comp(request):
+def convertir_Acta_bru(request):
     # --- Consulta de códigos de rubro ---
     codigo_rubro_bru = codigoRubro(request, 2)
     codigo_rubro_bru = codigo_rubro_bru[['codigo_rubro', 'tecnica']]
@@ -1462,7 +1463,7 @@ def convertir_Acta_bru_comp(request):
 
                 # Pintar filas de confirmatoria en gris claro
                 ws = writer.sheets["Acta Digital"]
-                from openpyxl.styles import PatternFill
+             
                 fill_gray = PatternFill(start_color="DDDDDD", end_color="DDDDDD", fill_type="solid")
 
                 # Buscamos la columna "Rubro" para identificar confirmatoria
