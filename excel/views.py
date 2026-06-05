@@ -1342,6 +1342,7 @@ def convertir_Acta_bru_comp(request):
                 lote = request.POST.get(f"lote{i}")
                 estampilla = request.POST.get(f"estampilla{i}")
                 codigoDT = request.POST.get(f"codigoDT{i}")
+                conclusion= request.POST.get(f"conclusion{i}")
 
                 if acta and nro_informe:
                     df_tablas = extraer_tablas2(acta)
@@ -1385,7 +1386,7 @@ def convertir_Acta_bru_comp(request):
                         "Estampilla": [estampilla] * len(df_tablas),
                         "Codigo DT": [codigoDT] * len(df_tablas),
                         "Observacion del Protocolo": None,
-                        "Conclusion Protocolo": None,
+                        "Conclusion Protocolo": [conclusion]*len(df_tablas),
                     })
                     df_acta = pd.concat([df_acta, df_temp], ignore_index=True)
 
@@ -1430,7 +1431,7 @@ def convertir_Acta_bru_comp(request):
                                 "Estampilla": [estampillaComp] * len(df_tablas),
                                 "Codigo DT": [codigoDT] * len(df_tablas),
                                 "Observacion del Protocolo": None,
-                                "Conclusion Protocolo": None,
+                                "Conclusion Protocolo": [conclusion]*len(df_tablas),
                             })
                             df_acta = pd.concat([df_acta, df_comp], ignore_index=True)
 
