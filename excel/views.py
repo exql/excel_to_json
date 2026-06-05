@@ -1435,7 +1435,7 @@ def convertir_Acta_bru_comp(request):
                             })
                             df_acta = pd.concat([df_acta, df_comp], ignore_index=True)
 
-                        # --- Conversión de tipos antes de exportar ---
+                                    # --- Conversión de tipos antes de exportar ---
             columnas_de_fecha = [
                 "Fecha de Toma","Fecha de Recepcion","Fecha Inicio","Fecha Fin","Fecha Vencimiento Antigeno/Kit"
             ]
@@ -1460,12 +1460,25 @@ def convertir_Acta_bru_comp(request):
             with pd.ExcelWriter(response, engine='openpyxl') as writer:
                 df_acta.to_excel(writer, sheet_name="Acta Digital", index=False, header=True)
 
+                # Pintar filas de confirmatoria en gris claro
+                ws = writer.sheets["Acta Digital"]
+                from openpyxl.styles import PatternFill
+                fill_gray = PatternFill(start_color="DDDDDD", end_color="DDDDDD", fill_type="solid")
+
+                # Buscamos la columna "Rubro" para identificar confirmatoria
+                col_rubro_idx = df_acta.columns.get_loc("Rubro") + 1  # +1 porque openpyxl es 1-based
+
+                for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+                    rubro_cell = row[col_rubro_idx - 1]  # índice ajustado
+                    if rubro_cell.value == codigo_rubro_confirmatoria:
+                        for cell in row:
+                            cell.fill = fill_gray
+
             return response
 
         except Exception as e:
             # Si ocurre un error en cualquier parte del proceso
             return JsonResponse({'error': f'Ocurrió un error en la conversión: {str(e)}'}, status=500)
 
-        # Si no se recibe un POST válido
+    # Si no se recibe un POST válido
     return JsonResponse({'error': 'No se pudo generar el archivo excel'}, status=405)
-
