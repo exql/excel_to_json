@@ -1468,3 +1468,4 @@ def convertir_Acta_bru_comp(request):
 
         # Si no se recibe un POST válido
     return JsonResponse({'error': 'No se pudo generar el archivo excel'}, status=405)
+
