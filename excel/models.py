@@ -177,3 +177,37 @@ class RegistroExcel(models.Model):
 
     def __str__(self):
         return f"Registro {self.nro_informe or 'sin informe'} - Usuario {self.usuario_id}"
+    
+
+
+    
+
+# NUEVO DISEÑO DEL FRONTEND: 
+
+# Tabla para videos de los tutoriales.
+class Tutorial(models.Model):
+    titulo = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True)
+    video_url = models.URLField()
+    contenido = models.TextField()
+    meta_title = models.CharField(max_length=60)
+    meta_description = models.CharField(max_length=160)
+    categoria = models.CharField(max_length=50)
+    orden = models.IntegerField(default=0)
+    fecha_publicacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.titulo
+
+# Tabla para el historial de las conversiones de los usuarios
+class ConversionLog(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    laboratorio = models.ForeignKey('DatosLab', on_delete=models.CASCADE)
+    ensayo = models.ForeignKey('Rubro', on_delete=models.CASCADE)
+    fecha_procesamiento = models.DateTimeField(auto_now_add=True)
+    numero_informe = models.CharField(max_length=50)
+    numero_acta = models.CharField(max_length=50)
+    cantidad_registros = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.laboratorio} - {self.ensayo} - Acta: {self.numero_acta}"
