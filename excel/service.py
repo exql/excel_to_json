@@ -70,9 +70,6 @@ def cargar_db():
     # Submotivos: {descripcion: codigo}
     submotivos = {s.descripcion.strip(): s.codigo for s in SubMotivo.objects.all()}
 
-    # Especies: {descripcion: codigo}
-    #especies = {e.descripcion.strip(): e.codigo for e in Especie.objects.all()}
-
     # Especies: {descripcion_normalizada: id}
     
     especies = {normalizar(e.descripcion): e.codigo for e in Especie.objects.all()}
