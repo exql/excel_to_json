@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión - VetData</title>
+  <link rel="stylesheet" href="/css/stylesheet1.css">
+  <script src="/js/script.js" defer></script>
+</head>
+<body class="login-page">
+
+  <div class="layout">
+    <aside class="sidebar-left">
+      <div class="navbar-brand">
+        <div class="logo-placeholder">VD</div>
+        <span class="brand-name">VetData</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="tutoriales.html">🎥<span>Tutoriales</span></a>
+        <a href="blog.html">📚<span>Blog</span></a>
+        <a href="nosotros.html">ℹ️<span>Nosotros</span></a>
+      </nav>
+    </aside>
+
+    <main class="content-main">
+      <section class="hero">
+        <h1 class="hero-title">Accede a VetData</h1>
+        <p class="hero-description">Convierte archivos Excel en JSON de forma rápida y segura.</p>
+      </section>
+
+      <div class="login-grid-container">
+        
+        <div class="card flex-card">
+          <h2 class="card-title">¿Cómo Funciona VetData?</h2>
+          <div class="login-video-wrapper">
+            <iframe src="https://www.youtube-nocookie.com/embed/Dv9o-4LAIos" title="Tutorial" frameborder="0" allowfullscreen></iframe>
+          </div>
+          <p class="card-description">Sistema de conversión optimizado para GRECERT.</p>
+        </div>
+
+        <div class="card flex-card">
+          <h2 class="card-title">Iniciar Sesión</h2>
+          <form method="post" action="{% url 'login' %}" class="internal-form">
+            <div class="form-group">
+              <label for="username" class="form-label">Usuario</label>
+              <input type="text" name="username" id="username" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label for="password" class="form-label">Contraseña</label>
+              <input type="password" name="password" id="password" class="form-input" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Iniciar Sesión</button>
+          </form>
+        </div>
+
+        <div class="card flex-card">
+          <h2 class="card-title">Presentación General</h2>
+          <div class="login-video-wrapper">
+            <iframe src="https://www.youtube-nocookie.com/embed/Dv9o-4LAIos" title="Presentación" frameborder="0" allowfullscreen></iframe>
+          </div>
+          <p class="card-description">Ventajas competitivas para tu laboratorio.</p>
+        </div>
+
+        <div class="card flex-card qr-card">
+          <h3 class="card-title">¿No tienes cuenta?</h3>
+          <p class="card-description">Solicita tu Usuario y Clave Gratis</p>
+          <a href="https://wa.me/message/YKXFMI6MUGUCL1" class="btn-whatsapp" target="_blank" style="width: 100%;">
+            Contactar vía WhatsApp
+          </a>
+          <div class="qr-container">
+            <img src="/images/qr_whatsapp.jpg" alt="QR" class="qr-image">
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <footer class="footer">
+    <h3 style="margin-bottom: 15px; color: var(--color-foreground);">Experiencias de Laboratorios</h3>
+    <div class="experience-carousel">
+      <div class="marquee-row">
+        <div class="marquee-track track-left">
+          <div class="review-card">Review 1</div>
+          <div class="review-card">Review 2</div>
+          <div class="review-card">Review 3</div>
+          <div class="review-card">Review 4</div>
+          <div class="review-card">Review 5</div>
+          <div class="review-card">Review 1</div>
+          <div class="review-card">Review 2</div>
+          <div class="review-card">Review 3</div>
+          <div class="review-card">Review 4</div>
+          <div class="review-card">Review 5</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-content">
+      <p>&copy; 2025 VetData. Sistema de conversión Excel a JSON para GRECERT.</p>
+    </div>
+  </footer>
+</body>
+</html>
