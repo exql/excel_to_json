@@ -97,10 +97,14 @@ body {
 
 .buttons-container {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* dos columnas iguales */
-  gap: 20px; /* espacio entre los botones */
-  width: 100%; /* ocupa todo el ancho disponible */
-  margin-top: 20px; /* separación respecto a las actas */
+  grid-template-columns: 1fr 1fr;
+  /* dos columnas iguales */
+  gap: 20px;
+  /* espacio entre los botones */
+  width: 100%;
+  /* ocupa todo el ancho disponible */
+  margin-top: 20px;
+  /* separación respecto a las actas */
 }
 
 
@@ -116,7 +120,8 @@ body {
   border: 1px solid #0066d6;
   font-size: 16px;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    width: 100%; /* cada botón ocupa toda su columna */
+  width: 100%;
+  /* cada botón ocupa toda su columna */
   box-sizing: border-box;
 }
 
@@ -232,9 +237,12 @@ button:hover {
 /* Sección de planes */
 .plans-container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* dos columnas iguales */
-  gap: 20px; /* espacio entre las actas */
-  justify-content: center; /* centra el grid en la página */
+  grid-template-columns: repeat(2, 1fr);
+  /* dos columnas iguales */
+  gap: 20px;
+  /* espacio entre las actas */
+  justify-content: center;
+  /* centra el grid en la página */
 }
 
 /* Agrupar cada campo dentro del recuadro */
@@ -266,8 +274,10 @@ button:hover {
   gap: 20px;
   /* espacio entre columnas */
 }
+
 .plan h3 {
- grid-column: span 2; /* el título ocupa las dos columnas */
+  grid-column: span 2;
+  /* el título ocupa las dos columnas */
   margin: 0 0 15px;
   font-size: 24px;
   color: #333;
@@ -399,55 +409,85 @@ button:hover {
 
 /* Estilos para la nueva estructura del formulario  de brucelosis*/
 
-/* Elimina el borde por defecto del fieldset y ajusta el margen */
-fieldset.plan {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    background-color: #ffffff;
+/* Contenedor del grupo completo */
+.acta-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 25px;
+  /* Separación entre actas */
+  width: 100%;
 }
 
-/* Estilo para el título de cada acta dentro del fieldset */
-fieldset.plan legend {
-    padding: 0 10px;
-    font-weight: bold;
-    color: #333;
-}
 
-/* Mantiene el estilo minimalista de tus cajas de "análisis complementario" */
+
+/* El bloque complementario */
 .comp-block {
-    display: none;
-    background-color: #f9f9f9;
-    border-left: 4px solid #4a90e2; /* Un acento sutil para diferenciar */
-    padding: 15px;
-    margin-bottom: 30px;
-    border-radius: 0 8px 8px 0;
+  display: none;
+  /* Oculto por defecto */
+  grid-template-columns: 1fr 1fr;
+  /* Mismo grid que el principal */
+  gap: 15px;
+  background: #f9f9f9;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-top: none;
+  /* Sin borde arriba para que se una al fieldset */
+  border-radius: 0 0 8px 8px;
+  /* Bordes redondeados solo abajo */
 }
+
 .comp-block.visible {
-    display: flex; /* O 'flex' si prefieres que se mantenga como bloque de diseño */
+  display: grid;
 }
 
-.comp-block h3 {
-    margin-top: 0;
-    font-size: 1.1rem;
-    color: #555;
-}
-
-/* Asegura que los grupos de formulario mantengan el espacio correcto */
+/* Campos del formulario */
 .form-group {
-    margin-bottom: 15px;
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
+/* 1. Mantenemos tu diseño prolijo para los campos */
+.plan .form-group,
+.comp-block .form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  /* Un poco más de aire para que no se vea apretado */
+  text-align: left;
+}
+
+/* 2. Aseguramos que el input y el label sean coherentes */
 .form-group label {
-    margin-bottom: 5px;
-    font-size: 0.9rem;
-    color: #444;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+  color: #333;
 }
 
+.form-group input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  /* Esto es clave: hace que el input llene su columna */
+}
 
+/* 3. El Grid que mantiene todo "fijo" y evita los saltos */
+.plan,
+.comp-block.visible {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* Dos columnas iguales */
+  gap: 15px;
+  /* Espacio entre los campos */
+}
+
+/* 4. Asegura que elementos como el título o el checkbox no se rompan */
+.plan legend,
+.plan h3,
+.plan .form-group:last-child {
+  grid-column: span 2;
+  /* Ocupan el ancho completo */
+}
 
 
 /* Ajustes para navbar en pantallas pequeñas */
