@@ -441,10 +441,9 @@ button:hover {
 }
 
 /* Campos del formulario */
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
+.form-group { display: flex; flex-direction: column; margin-bottom: 10px; text-align: left; }
+
+.form-group:last-child { grid-column: span 2; }
 
 /* 1. Mantenemos tu diseño prolijo para los campos */
 .plan .form-group,
@@ -471,15 +470,6 @@ button:hover {
   /* Esto es clave: hace que el input llene su columna */
 }
 
-/* 3. El Grid que mantiene todo "fijo" y evita los saltos */
-.plan,
-.comp-block.visible {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  /* Dos columnas iguales */
-  gap: 15px;
-  /* Espacio entre los campos */
-}
 
 /* 4. Asegura que elementos como el título o el checkbox no se rompan */
 .plan legend,
