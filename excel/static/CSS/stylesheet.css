@@ -436,14 +436,38 @@ button:hover {
   /* Bordes redondeados solo abajo */
 }
 
+.comp-block h3 {
+  grid-column: span 2;
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+
 .comp-block.visible {
   display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  /* Aumenta este valor para más separación entre columnas */
+  padding: 20px;
+}
+
+.comp-block .form-group {
+  margin-bottom: 0;
 }
 
 /* Campos del formulario */
-.form-group { display: flex; flex-direction: column; margin-bottom: 10px; text-align: left; }
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  text-align: left;
+}
 
-.form-group:last-child { grid-column: span 2; }
+.form-group:last-child {
+  grid-column: span 2;
+}
 
 /* 1. Mantenemos tu diseño prolijo para los campos */
 .plan .form-group,

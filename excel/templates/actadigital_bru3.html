@@ -62,9 +62,9 @@
                     {% for i in "1234" %}
                     <div class="acta-group">
                         <fieldset class="plan">
-                            <legend>Acta {{ i }}</legend>
+                            <legend><h3>Acta {{ i }}</h3></legend>
                             <div class="form-group"><label>Número de informe:</label><input type="text"
-                                    name="informe{{ i }}" maxlength="50" {% if i=="1" %}required{% endif %}></div>
+                                    name="informe{{ i }}" maxlength="50" {% if i == "1" %} required {% endif %}></div>
                             <div class="form-group"><label>Fecha de Recepción:</label><input type="date"
                                     name="fechaRecepcion{{ i }}"></div>
                             <div class="form-group"><label>Fecha Inicio:</label><input type="date"
@@ -88,7 +88,7 @@
                             <div class="form-group"><label>Conclusión:</label><input type="text"
                                     name="conclusion{{ i }}" maxlength="1000"></div>
                             <div class="form-group"><label>Adjuntar PDF:</label><input type="file" name="acta{{ i }}"
-                                    accept=".pdf" {% if i=="1" %}required{% endif %}></div>
+                                    accept=".pdf" {% if i == "1" %} required {% endif %}></div>
                             <div class="form-group">
                                 <input type="checkbox" id="toggleComp{{ i }}" name="toggleComp{{ i }}">
                                 <label for="toggleComp{{ i }}"><strong>Agregar análisis complementario</strong></label>
@@ -96,6 +96,7 @@
                         </fieldset>
 
                         <div id="compBlock{{ i }}" class="comp-block">
+                            <h3>Análisis Complementario {{ i }}</h3>
                             <div class="form-group"><label>Fecha Inicio:</label><input type="date"
                                     name="fechaInicioComp{{ i }}"></div>
                             <div class="form-group"><label>Fecha Fin:</label><input type="date"
