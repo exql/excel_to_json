@@ -338,35 +338,8 @@ button:hover {
   width: 100%;
   box-sizing: border-box;
 }
-.comp-block {
-  display: none;
-  margin-top: 15px;
-  border: 1px solid #ccc;
-  padding: 10px;
-}
-.comp-block.visible {
-  background-color: #FAFAFA;
-  border: 1px solid #E0E0E0;
-  border-radius: 8px;
-  padding: 20px;
-  width: 430px;
-  text-align: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  /* --- NUEVO: grid de dos columnas --- */
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  /* dos columnas iguales */
-  gap: 20px;
-  /* espacio entre columnas */
-}
-.comp-block h3 {
- grid-column: span 2; /* el título ocupa las dos columnas */
-  margin: 0 0 15px;
-  font-size: 24px;
-  color: #333;
 
-}
+
 
 /* Responsividad general */
 @media (max-width: 768px) {
@@ -444,11 +417,15 @@ fieldset.plan legend {
 
 /* Mantiene el estilo minimalista de tus cajas de "análisis complementario" */
 .comp-block {
+    display: none;
     background-color: #f9f9f9;
     border-left: 4px solid #4a90e2; /* Un acento sutil para diferenciar */
     padding: 15px;
     margin-bottom: 30px;
     border-radius: 0 8px 8px 0;
+}
+.comp-block.visible {
+    display: block; /* O 'flex' si prefieres que se mantenga como bloque de diseño */
 }
 
 .comp-block h3 {
