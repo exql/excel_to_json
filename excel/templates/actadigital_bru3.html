@@ -58,67 +58,6 @@
                 {% csrf_token %}
                 <div class="plans-container">
 
-<<<<<<< HEAD
-                    <div class="acta-group">
-                        <fieldset class="plan">
-                            <legend>
-                                <h3>Acta 1</h3>
-                            </legend>
-                            <div class="form-group"><label for="informe1">Número de informe:</label><input type="text"
-                                    id="informe1" name="informe1" maxlength="50" required></div>
-                            <div class="form-group"><label for="fechaRecepcion1">Fecha de Recepción:</label><input
-                                    type="date" id="fechaRecepcion1" name="fechaRecepcion1"></div>
-                            <div class="form-group"><input type="checkbox" id="toggleComp1" name="toggleComp1"><label
-                                    for="toggleComp1"><strong>Agregar análisis complementario</strong></label></div>
-                        </fieldset>
-                        <div id="compBlock1" class="comp-block">
-                            <h3>Análisis Complementario 1</h3>
-                        </div>
-                    </div>
-
-                    <div class="acta-group">
-                        <fieldset class="plan">
-                            <legend>
-                                <h3>Acta 2</h3>
-                            </legend>
-                            <div class="form-group"><label for="informe2">Número de informe:</label><input type="text"
-                                    id="informe2" name="informe2" maxlength="50"></div>
-                            <div class="form-group"><input type="checkbox" id="toggleComp2" name="toggleComp2"><label
-                                    for="toggleComp2"><strong>Agregar análisis complementario</strong></label></div>
-                        </fieldset>
-                        <div id="compBlock2" class="comp-block">
-                            <h3>Análisis Complementario 2</h3>
-                        </div>
-                    </div>
-
-                    <div class="acta-group">
-                        <fieldset class="plan">
-                            <legend>
-                                <h3>Acta 3</h3>
-                            </legend>
-                            <div class="form-group"><label for="informe3">Número de informe:</label><input type="text"
-                                    id="informe3" name="informe3" maxlength="50"></div>
-                            <div class="form-group"><input type="checkbox" id="toggleComp3" name="toggleComp3"><label
-                                    for="toggleComp3"><strong>Agregar análisis complementario</strong></label></div>
-                        </fieldset>
-                        <div id="compBlock3" class="comp-block">
-                            <h3>Análisis Complementario 3</h3>
-                        </div>
-                    </div>
-
-                    <div class="acta-group">
-                        <fieldset class="plan">
-                            <legend>
-                                <h3>Acta 4</h3>
-                            </legend>
-                            <div class="form-group"><label for="informe4">Número de informe:</label><input type="text"
-                                    id="informe4" name="informe4" maxlength="50"></div>
-                            <div class="form-group"><input type="checkbox" id="toggleComp4" name="toggleComp4"><label
-                                    for="toggleComp4"><strong>Agregar análisis complementario</strong></label></div>
-                        </fieldset>
-                        <div id="compBlock4" class="comp-block">
-                            <h3>Análisis Complementario 4</h3>
-=======
                     <!-- Funciones de renderizado para simplificar el bloque, mantenemos los 4 formularios -->
                     {% for i in "1234" %}
                     <div class="acta-group">
@@ -173,9 +112,9 @@
                                     maxlength="25"></div>
                             <div class="form-group"><label>Estampilla:</label><input type="text"
                                     name="estampillaComp{{ i }}" maxlength="25"></div>
->>>>>>> 9cc2f88337ff0cfd8ab34a80434b81529c3cfed9
                         </div>
                     </div>
+                    {% endfor %}
 
                     <div class="buttons-container">
                         <button type="submit" class="btn" formaction="/convertir_Acta_bru/">Excel</button>
