@@ -425,7 +425,7 @@ fieldset.plan legend {
     border-radius: 0 8px 8px 0;
 }
 .comp-block.visible {
-    display: block; /* O 'flex' si prefieres que se mantenga como bloque de diseño */
+    display: flex; /* O 'flex' si prefieres que se mantenga como bloque de diseño */
 }
 
 .comp-block h3 {
