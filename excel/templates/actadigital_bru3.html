@@ -58,6 +58,7 @@
                 {% csrf_token %}
                 <div class="plans-container">
 
+<<<<<<< HEAD
                     <div class="acta-group">
                         <fieldset class="plan">
                             <legend>
@@ -117,6 +118,62 @@
                         </fieldset>
                         <div id="compBlock4" class="comp-block">
                             <h3>Análisis Complementario 4</h3>
+=======
+                    <!-- Funciones de renderizado para simplificar el bloque, mantenemos los 4 formularios -->
+                    {% for i in "1234" %}
+                    <div class="acta-group">
+                        <fieldset class="plan">
+                            <legend>Acta {{ i }}</legend>
+                            <div class="form-group"><label>Número de informe:</label><input type="text"
+                                    name="informe{{ i }}" maxlength="50" {% if i=="1" %}required{% endif %}></div>
+                            <div class="form-group"><label>Fecha de Recepción:</label><input type="date"
+                                    name="fechaRecepcion{{ i }}"></div>
+                            <div class="form-group"><label>Fecha Inicio:</label><input type="date"
+                                    name="fechaInicio{{ i }}"></div>
+                            <div class="form-group"><label>Fecha Fin:</label><input type="date" name="fechaFin{{ i }}">
+                            </div>
+                            <div class="form-group"><label>Vencimiento Antigeno/Kit:</label><input type="date"
+                                    name="fechaVencimiento{{ i }}"></div>
+                            <div class="form-group"><label>Código Resultado:</label><input type="text"
+                                    name="resultadoLetra{{ i }}" maxlength="5"></div>
+                            <div class="form-group"><label>Antigeno/Kit:</label><input type="text"
+                                    name="antigeno{{ i }}" maxlength="25"></div>
+                            <div class="form-group"><label>Marca Antigeno/Kit:</label><input type="text"
+                                    name="marcaAntigeno{{ i }}" maxlength="25"></div>
+                            <div class="form-group"><label>Lote:</label><input type="text" name="lote{{ i }}"
+                                    maxlength="25"></div>
+                            <div class="form-group"><label>Estampilla:</label><input type="text"
+                                    name="estampilla{{ i }}" maxlength="25"></div>
+                            <div class="form-group"><label>Código DT:</label><input type="number" name="codigoDT{{ i }}"
+                                    maxlength="20"></div>
+                            <div class="form-group"><label>Conclusión:</label><input type="text"
+                                    name="conclusion{{ i }}" maxlength="1000"></div>
+                            <div class="form-group"><label>Adjuntar PDF:</label><input type="file" name="acta{{ i }}"
+                                    accept=".pdf" {% if i=="1" %}required{% endif %}></div>
+                            <div class="form-group">
+                                <input type="checkbox" id="toggleComp{{ i }}" name="toggleComp{{ i }}">
+                                <label for="toggleComp{{ i }}"><strong>Agregar análisis complementario</strong></label>
+                            </div>
+                        </fieldset>
+
+                        <div id="compBlock{{ i }}" class="comp-block">
+                            <div class="form-group"><label>Fecha Inicio:</label><input type="date"
+                                    name="fechaInicioComp{{ i }}"></div>
+                            <div class="form-group"><label>Fecha Fin:</label><input type="date"
+                                    name="fechaFinComp{{ i }}"></div>
+                            <div class="form-group"><label>Vencimiento Antigeno/Kit:</label><input type="date"
+                                    name="fechaVencimientoComp{{ i }}"></div>
+                            <div class="form-group"><label>Código Resultado:</label><input type="text"
+                                    name="resultadoLetraComp{{ i }}" maxlength="5"></div>
+                            <div class="form-group"><label>Antigeno/Kit:</label><input type="text"
+                                    name="antigenoComp{{ i }}" maxlength="25"></div>
+                            <div class="form-group"><label>Marca Antigeno/Kit:</label><input type="text"
+                                    name="marcaAntigenoComp{{ i }}" maxlength="25"></div>
+                            <div class="form-group"><label>Lote:</label><input type="text" name="loteComp{{ i }}"
+                                    maxlength="25"></div>
+                            <div class="form-group"><label>Estampilla:</label><input type="text"
+                                    name="estampillaComp{{ i }}" maxlength="25"></div>
+>>>>>>> 9cc2f88337ff0cfd8ab34a80434b81529c3cfed9
                         </div>
                     </div>
 
