@@ -450,12 +450,9 @@ button:hover {
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   /* Aumenta este valor para más separación entre columnas */
-  padding: 20px;
+  padding: 25px;
 }
 
-.comp-block .form-group {
-  margin-bottom: 0;
-}
 
 /* Campos del formulario */
 .form-group {
@@ -465,7 +462,7 @@ button:hover {
   text-align: left;
 }
 
-.form-group:last-child {
+.plan .form-group:last-child {
   grid-column: span 2;
 }
 
