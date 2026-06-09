@@ -44,5 +44,6 @@ urlpatterns = [
     path('actaAIE_JSON/', views.actaAIE_JSON, name='actaAIE_JSON'),
     path('excel_GRECERT/', views.excel_GRECERT, name='excel_GRECERT'),
 
-   
+   path('actadigital_bru3/', views.actadigital_bru3, name='actadigital_bru3'),
+
 ]

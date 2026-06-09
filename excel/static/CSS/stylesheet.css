@@ -424,6 +424,55 @@ button:hover {
   }
 }
 
+/* Estilos para la nueva estructura del formulario  de brucelosis*/
+
+/* Elimina el borde por defecto del fieldset y ajusta el margen */
+fieldset.plan {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: #ffffff;
+}
+
+/* Estilo para el título de cada acta dentro del fieldset */
+fieldset.plan legend {
+    padding: 0 10px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Mantiene el estilo minimalista de tus cajas de "análisis complementario" */
+.comp-block {
+    background-color: #f9f9f9;
+    border-left: 4px solid #4a90e2; /* Un acento sutil para diferenciar */
+    padding: 15px;
+    margin-bottom: 30px;
+    border-radius: 0 8px 8px 0;
+}
+
+.comp-block h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    color: #555;
+}
+
+/* Asegura que los grupos de formulario mantengan el espacio correcto */
+.form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+
+
+
 /* Ajustes para navbar en pantallas pequeñas */
 .responsive-navbar .menu-icon {
   display: none;

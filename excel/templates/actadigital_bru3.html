@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acta Digital Brucelosis</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'CSS/stylesheet.css' %}">
+    <script src="{% static 'JS/script.js' %}" defer></script>
+    <!-- Matomo -->
+    <script>
+        var _paq = window._paq = window._paq || [];
+        {% if user.is_authenticated %}
+        _paq.push(['setUserId', '{{ user.username }}']);
+        {% endif %}
+        _paq.push(['trackPageView']);
+        _paq.push(['enableLinkTracking']);
+        (function () {
+            var u = "//analytics.vetdata.com.ar/";
+            _paq.push(['setTrackerUrl', u + 'matomo.php']);
+            _paq.push(['setSiteId', '1']);
+            var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
+            g.async = true; g.src = u + 'matomo.js'; s.parentNode.insertBefore(g, s);
+        })();
+    </script>
+</head>
+
+<body>
+    <header class="navbar responsive-navbar">
+        <div class="menu-icon" onclick="toggleMenu()">
+            <img src="{% static 'images/menu-icon.svg' %}" alt="Menú">
+        </div>
+        <ul class="nav-links">
+            <li><a href="{% url 'index' %}">Inicio</a></li>
+            <li><a href="{% url 'contacto' %}">Contacto</a></li>
+            <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
+            <li><a href="{% url 'tutoriales' %}">Tutoriales</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}" class="logout-button">Cerrar Sesión</a></li>
+            {% endif %}
+        </ul>
+    </header>
+
+    <main class="main-container">
+        <aside class="left-column">
+            <div class="ad-box">
+                <h2>Plantilla Excel para Actas Digitales</h2>
+                <p>Descargue este excel que contiene todos los campos requeridos por el GRECERT</p>
+                <a href="{% static 'files/Plantilla_Acta Digital_V1.xlsx' %}" download class="btn">📥 Descargar Plantilla</a>
+            </div>
+        </aside>
+
+        <section class="central-content">
+            <h1>Procesar las Actas Digitales de Brucelosis</h1>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="plans-container">
+
+                    <!-- Funciones de renderizado para simplificar el bloque, mantenemos los 4 formularios -->
+                    {% for i in "1234" %}
+                    <fieldset class="plan">
+                        <legend><h3>Acta {{ i }}</h3></legend>
+                        <div class="form-group"><label for="informe{{ i }}">Número de informe:</label><input type="text" id="informe{{ i }}" name="informe{{ i }}" maxlength="50" {% if i == "1" %}required{% endif %}></div>
+                        <div class="form-group"><label for="fechaRecepcion{{ i }}">Fecha de Recepción:</label><input type="date" id="fechaRecepcion{{ i }}" name="fechaRecepcion{{ i }}"></div>
+                        <div class="form-group"><label for="fechaInicio{{ i }}">Fecha Inicio:</label><input type="date" id="fechaInicio{{ i }}" name="fechaInicio{{ i }}"></div>
+                        <div class="form-group"><label for="fechaFin{{ i }}">Fecha Fin:</label><input type="date" id="fechaFin{{ i }}" name="fechaFin{{ i }}"></div>
+                        <div class="form-group"><label for="fechaVencimiento{{ i }}">Vencimiento Antigeno/Kit:</label><input type="date" id="fechaVencimiento{{ i }}" name="fechaVencimiento{{ i }}"></div>
+                        <div class="form-group"><label for="resultadoLetra{{ i }}">Código Resultado:</label><input type="text" id="resultadoLetra{{ i }}" name="resultadoLetra{{ i }}" maxlength="5"></div>
+                        <div class="form-group"><label for="antigeno{{ i }}">Antigeno/Kit:</label><input type="text" id="antigeno{{ i }}" name="antigeno{{ i }}" maxlength="25"></div>
+                        <div class="form-group"><label for="marcaAntigeno{{ i }}">Marca Antigeno/Kit:</label><input type="text" id="marcaAntigeno{{ i }}" name="marcaAntigeno{{ i }}" maxlength="25"></div>
+                        <div class="form-group"><label for="lote{{ i }}">Lote:</label><input type="text" id="lote{{ i }}" name="lote{{ i }}" maxlength="25"></div>
+                        <div class="form-group"><label for="estampilla{{ i }}">Estampilla:</label><input type="text" id="estampilla{{ i }}" name="estampilla{{ i }}" maxlength="25"></div>
+                        <div class="form-group"><label for="codigoDT{{ i }}">Código DT:</label><input type="number" id="codigoDT{{ i }}" name="codigoDT{{ i }}" maxlength="20"></div>
+                        <div class="form-group"><label for="conclusion{{ i }}">Conclusión:</label><input type="text" id="conclusion{{ i }}" name="conclusion{{ i }}" maxlength="1000"></div>
+                        <div class="form-group"><label for="acta{{ i }}">Adjuntar PDF:</label><input type="file" id="acta{{ i }}" name="acta{{ i }}" accept=".pdf" {% if i == "1" %}required{% endif %}></div>
+                        
+                        <div class="form-group">
+                            <input type="checkbox" id="toggleComp{{ i }}" name="toggleComp{{ i }}">
+                            <label for="toggleComp{{ i }}"><strong>Agregar análisis complementario</strong></label>
+                        </div>
+                    </fieldset>
+
+                    <div id="compBlock{{ i }}" class="comp-block">
+                        <h3>Análisis Complementario {{ i }}</h3>
+                        <div class="form-group"><label for="fechaInicioComp{{ i }}">Fecha Inicio:</label><input type="date" id="fechaInicioComp{{ i }}" name="fechaInicioComp{{ i }}"></div>
+                        <div class="form-group"><label for="fechaFinComp{{ i }}">Fecha Fin:</label><input type="date" id="fechaFinComp{{ i }}" name="fechaFinComp{{ i }}"></div>
+                        <div class="form-group"><label for="fechaVencimientoComp{{ i }}">Vencimiento Antigeno/Kit:</label><input type="date" id="fechaVencimientoComp{{ i }}" name="fechaVencimientoComp{{ i }}"></div>
+                        <div class="form-group"><label for="resultadoLetraComp{{ i }}">Código Resultado:</label><input type="text" id="resultadoLetraComp{{ i }}" name="resultadoLetraComp{{ i }}" maxlength="5"></div>
+                        <div class="form-group"><label for="antigenoComp{{ i }}">Antigeno/Kit:</label><input type="text" id="antigenoComp{{ i }}" name="antigenoComp{{ i }}" maxlength="25"></div>
+                        <div class="form-group"><label for="marcaAntigenoComp{{ i }}">Marca Antigeno/Kit:</label><input type="text" id="marcaAntigenoComp{{ i }}" name="marcaAntigenoComp{{ i }}" maxlength="25"></div>
+                        <div class="form-group"><label for="loteComp{{ i }}">Lote:</label><input type="text" id="loteComp{{ i }}" name="loteComp{{ i }}" maxlength="25"></div>
+                        <div class="form-group"><label for="estampillaComp{{ i }}">Estampilla:</label><input type="text" id="estampillaComp{{ i }}" name="estampillaComp{{ i }}" maxlength="25"></div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="buttons-container">
+                        <button type="submit" class="btn" formaction="/convertir_Acta_bru/">Excel</button>
+                        <button type="submit" class="btn" formaction="/actaBru_JSON/">JSON</button>
+                        <button type="submit" class="btn" formaction="/excel_GRECERT/">Excel GRECERT</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="ad-box">
+                <h2>Adjuntar Excel del acta digital</h2>
+                <form action="/crear_json_bru_digital/" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="file" id="archivo" name="archivo" accept=".xls,.xlsx"><br><br>
+                    <button type="submit">Converti a JSON</button>
+                </form>
+            </div>
+        </section>
+
+        <aside class="right-column">
+            <div class="ad-box">
+                <h1>Listado de Códigos de A.I.E.</h1>
+                <p>Aquí podrá descargar el Listado de Códigos para completar el excel de A.I.E.</p>
+            </div>
+        </aside>
+    </main>
+</body>
+</html>

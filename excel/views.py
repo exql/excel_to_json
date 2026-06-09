@@ -77,6 +77,10 @@ def actadigital_bru2(request):
     return render(request, 'actadigital_bru_2.html')
  # reemplazar este por el actadigital_bru.html
 
+ def actadigital_bru3(request):
+    return render(request, 'actadigital_bru3.html')
+ # reemplazar este por el actadigital_bru.html
+
 def actadigital_AIE2(request): # Hoja PDF a Excel para AIE
     return render(request, 'actadigital_AIE2.html')
 
