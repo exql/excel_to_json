@@ -84,6 +84,11 @@ def actadigital_bru3(request):
 def actadigital_AIE2(request): # Hoja PDF a Excel para AIE
     return render(request, 'actadigital_AIE2.html')
 
+def Actadigital_Aujeszky(request): # Hoja PDF a Excel para AUJESZKY
+    return render(request, 'Actadigital_Aujeszky.html')
+
+Actadigital_Aujeszky
+
 #Registrar Usuarios
 @login_required
 def registrar_usuario(request):

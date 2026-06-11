@@ -35,7 +35,7 @@ urlpatterns = [
     path('convertir_Acta_bru/', views.convertir_Acta_bru, name='convertir_Acta_bru'),
     path('crear_json_bru_digital/', views.crear_json_bru_digital, name='crear_json_bru_digital'),
     path('excel_GRECERT/', views.excel_GRECERT, name='excel_GRECERT'),
-    
+    path('Actadigital_Aujeszky/', views.Actadigital_Aujeszky, name='Actadigital_Aujeszky'),
 
     path('actadigital_AIE2/', views.actadigital_AIE2, name='actadigital_AIE2'), # Hoja Pasa el pdf a Excel de AIE
     path('actadigital_bru2/', views.actadigital_bru2, name='actadigital_bru2'),
@@ -44,6 +44,6 @@ urlpatterns = [
     path('actaAIE_JSON/', views.actaAIE_JSON, name='actaAIE_JSON'),
     path('excel_GRECERT/', views.excel_GRECERT, name='excel_GRECERT'),
 
-   path('actadigital_bru3/', views.actadigital_bru3, name='actadigital_bru3'),
+    path('actadigital_bru3/', views.actadigital_bru3, name='actadigital_bru3'),
 
 ]
