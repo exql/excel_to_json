@@ -151,3 +151,22 @@ RESTRICTED_VIEWS = [
     "registrar_usuario"
     
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'excel_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'excel' / 'django_error.log',  # archivo dentro de excel/
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['excel_file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
