@@ -157,15 +157,15 @@ LOGGING = {
     'disable_existing_loggers': False,
     'handlers': {
         'excel_file': {
-            'level': 'ERROR',
+            'level': 'WARNING',  # antes estaba en ERROR
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'excel' / 'django_error.log',  # archivo dentro de excel/
+            'filename': BASE_DIR / 'excel' / 'django_error.log',
         },
     },
     'loggers': {
         'django': {
             'handlers': ['excel_file'],
-            'level': 'ERROR',
+            'level': 'WARNING',  # antes estaba en ERROR
             'propagate': True,
         },
     },

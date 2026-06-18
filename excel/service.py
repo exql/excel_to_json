@@ -13,8 +13,13 @@ from excel.models import PerfilUsuario
 import pdfplumber
 import re
 from django.utils import timezone
-from .models import RegistroExcel, DatosLab, Motivo, SubMotivo, Especie, Categoria, Tecnica
+from .models import RegistroExcel, DatosLab, Motivo, SubMotivo, Especie, Categoria, Tecnica, Sexo
 import unicodedata
+import fitz
+import logging
+logger = logging.getLogger(__name__)
+
+
 
 # Se conecta a la Base de datos y trae los datos de la vista laboratorio_codigo_ensayos que contiene el codigo del rubro
 # y su respectivo analito, matríz y técnica.
@@ -81,6 +86,30 @@ def cargar_db():
     tecnicas = {normalizar(t.tecnica): t.id for t in Tecnica.objects.all()}
 
     return motivos, submotivos, especies, categorias, tecnicas
+
+def cargar_db2():
+    """
+    Consulta las tablas de la base de datos y devuelve
+    diccionarios normalizados para motivos, submotivos,
+    especies, categorías (con sexo) y técnicas.
+    """
+
+    motivos = {normalizar(m.descripcion): m.codigo for m in Motivo.objects.all()}
+    submotivos = {s.descripcion.strip(): s.codigo for s in SubMotivo.objects.all()}
+    especies = {normalizar(e.descripcion): e.codigo for e in Especie.objects.all()}
+
+    # Categorías con join a sexo
+    categorias = {
+        normalizar(c.descripcion): {"codigo": c.codigo, "sexo": c.sexo.codigo if c.sexo else None}
+        for c in Categoria.objects.select_related("sexo").all()
+    }
+
+    tecnicas = {normalizar(t.tecnica): t.id for t in Tecnica.objects.all()}
+    sexos = {normalizar(s.descripcion): s.codigo for s in Sexo.objects.all()}
+
+    return motivos, submotivos, especies, categorias, tecnicas, sexos
+
+
 
 
 # Da formato fecha a los datos de las actas digitales para generar la plantila del acta digital.
@@ -1172,3 +1201,152 @@ def nexo_acta_json_aie(df_acta, request):
     json_data = plantilla_agrupada.apply(lambda row: json_aie_digital(row, codigoLaboratorio), axis=1).tolist()
 
     return json_data
+
+
+
+class PDFProcessor:
+    def __init__(self, ruta_pdf):
+        self.ruta = ruta_pdf
+        self.doc = fitz.open(ruta_pdf)
+
+        (
+            self.motivos,
+            self.submotivos,
+            self.especies,
+            self.categorias,
+            self.tecnicas,
+            self.sexos,
+        ) = cargar_db()
+
+    def es_valido(self):
+        for i in range(min(3, len(self.doc))):
+            texto = self.doc[i].get_text().strip()
+            if texto:
+                return True
+        logger.warning(f"El PDF '{self.ruta}' no contiene texto legible. Puede ser una imagen escaneada sin OCR.")
+        return False
+
+    def cerrar(self):
+        self.doc.close()
+
+    def extraer_datos_cabecera(self):
+        datos = {
+            "numeroActa": None,
+            "cuitDeFuncionario": None,
+            "RENSPA": None,
+            "Motivo": None,
+            "SubMotivo": None,
+            "FechaToma": None,
+            "Especie": None,
+            "Tecnicas": None,
+        }
+
+        bloque_tecnicas = ""
+
+        with pdfplumber.open(self.ruta) as pdf:
+            for pagina in pdf.pages:
+                contenido = pagina.extract_text()
+                if not contenido:
+                    continue
+
+                match_acta = re.search(r"ACTA DE TOMA DE MUESTRAS Nº\s*(\d+)", contenido)
+                if match_acta:
+                    datos["numeroActa"] = match_acta.group(1)
+
+                match_cuit = re.search(r"Funcionario:\s*(\d+)", contenido)
+                if match_cuit:
+                    cuit_raw = match_cuit.group(1)
+                    if len(cuit_raw) >= 10:
+                        datos["cuitDeFuncionario"] = f"{cuit_raw[:2]}-{cuit_raw[2:-1]}-{cuit_raw[-1]}"
+                    else:
+                        datos["cuitDeFuncionario"] = cuit_raw
+
+                match_senasa = re.search(r"Nro\. Oficial Senasa:\s*([\d./]+)", contenido)
+                if match_senasa:
+                    datos["RENSPA"] = match_senasa.group(1)
+
+                match_fecha = re.search(r"Fecha Muestra:\s*([^\n]+?)(?=\s*Funcionario:)", contenido)
+                datos["FechaToma"] = match_fecha.group(1).strip() if match_fecha else None
+
+                match_motivo = re.search(r"Motivo:\s*(.*?)(?=\s*Submotivo:)", contenido, re.DOTALL)
+                if match_motivo:
+                    motivo_texto = match_motivo.group(1).strip()
+                    datos["Motivo"] = self.motivos.get(motivo_texto)
+
+                match_submotivo = re.search(r"Submotivo:\s*(.*?)(?=\s*Expediente)", contenido, re.DOTALL)
+                if match_submotivo:
+                    submotivo_texto = match_submotivo.group(1).replace("\n", " ").strip()
+                    datos["SubMotivo"] = self.submotivos.get(submotivo_texto)
+
+                match_especie = re.search(r"Especie:\s*(.*?)(?=\s*Matriz)", contenido, re.DOTALL)
+                if match_especie:
+                    especie_texto = normalizar(match_especie.group(1))
+                    datos["Especie"] = self.especies.get(especie_texto)
+
+                match_bloque = re.search(
+                    r"Grupo de Análisis Analito Técnica(.*?)ANEXO CON LAS MUESTRAS",
+                    contenido,
+                    re.DOTALL
+                )
+                if match_bloque:
+                    bloque_tecnicas += match_bloque.group(1)
+
+            if bloque_tecnicas:
+                tecnicas_encontradas = []
+                for descripcion, tecnica_id in self.tecnicas.items():
+                    if re.search(rf"{descripcion}", bloque_tecnicas, re.IGNORECASE):
+                        tecnicas_encontradas.append(tecnica_id)
+                datos["Tecnicas"] = tecnicas_encontradas if tecnicas_encontradas else None
+
+        return datos
+
+    def extraer_tablas(self):
+        tablas = []
+        with pdfplumber.open(self.ruta) as pdf:
+            for pagina in pdf.pages:
+                for tabla in pagina.extract_tables():
+                    tablas.append(tabla)
+
+        if not tablas or len(tablas) < 3:
+            return pd.DataFrame()
+
+        tabla_base = pd.DataFrame(tablas[2])
+        tabla_base.columns = tabla_base.iloc[2]
+        tabla_base = tabla_base.drop([0, 1, 2])
+        tabla_base = tabla_base.rename(columns={
+            "Nro. Tubo\n/Muestra": "Nro_Tubo",
+            "Identificación": "Identificacion",
+            "Categoría/edad": "Categoria"
+        })
+
+        df_final = tabla_base[["Identificacion", "Nro_Tubo", "Categoria"]].copy()
+
+        for i in range(3, len(tablas)):
+            df_temp = pd.DataFrame(tablas[i])
+            df_temp.columns = ["Nro_Tubo", "Identificacion", "Animal", "Categoria", "Fec_vacuna", "Observaciones"]
+            df_temp = df_temp[["Identificacion", "Nro_Tubo", "Categoria"]]
+            df_final = pd.concat([df_final, df_temp], ignore_index=True)
+
+        df_final["Identificacion"] = df_final["Identificacion"].astype(str).str.replace("\n", "").str.strip()
+        df_final["Nro_Tubo"] = df_final["Nro_Tubo"].astype(str).str.strip()
+
+        df_final["Categoria_texto"] = df_final["Categoria"].astype(str).str.split("/").str[0].str.strip().str.upper()
+
+        df_final["Categoria"] = df_final["Categoria_texto"].apply(self._mapear_categoria)
+        df_final["Sexo"] = df_final["Categoria_texto"].apply(self._mapear_sexo)
+
+        return df_final.reset_index(drop=True)
+
+    def _mapear_categoria(self, valor):
+        if not valor:
+            return None
+        texto = normalizar(str(valor))
+        cat = self.categorias.get(texto)
+        return cat["codigo"] if isinstance(cat, dict) else cat
+
+    def _mapear_sexo(self, valor):
+        if not valor:
+            return None
+        texto = normalizar(str(valor))
+        cat = self.categorias.get(texto)
+        return cat["sexo"] if isinstance(cat, dict) else self.sexos.get(texto)
