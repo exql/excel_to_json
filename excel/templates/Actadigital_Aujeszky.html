@@ -9,10 +9,8 @@
     <link rel="stylesheet" href="{% static 'CSS/stylesheet.css' %}">
     <script src="{% static 'JS/script.js' %}" defer></script>
 
-    <!-- Matomo -->
     <script>
         var _paq = window._paq = window._paq || [];
-        /* Si el usuario está autenticado, se envía su username a Matomo */
         {% if user.is_authenticated %}
         _paq.push(['setUserId', '{{ user.username }}']);
         {% endif %}
@@ -26,22 +24,16 @@
             g.async = true; g.src = u + 'matomo.js'; s.parentNode.insertBefore(g, s);
         })();
     </script>
-    <!-- End Matomo Code -->
 </head>
 
 <body>
 
-    <!-- Navbar -->
     <header class="navbar responsive-navbar">
-        <!--a href="{% url 'index' %}" class="logo">
-            <img src="{% static 'images/logo.png' %}" alt="Logo" width="50">
-        </a-->
         <div class="menu-icon" onclick="toggleMenu()">
             <img src="{% static 'images/menu-icon.svg' %}" alt="Menú">
         </div>
         <ul class="nav-links">
             <li><a href="{% url 'index' %}">Inicio</a></li>
-            <!--<li><a href="{% url 'planes' %}">Planes</a></li>-->
             <li><a href="{% url 'contacto' %}">Contacto</a></li>
             <li><a href="{% url 'nosotros' %}">Nosotros</a></li>
             <li><a href="{% url 'tutoriales' %}">Tutoriales</a></li>
@@ -51,17 +43,12 @@
         </ul>
     </header>
 
-    <!-- Cuerpo principal con columnas laterales -->
     <main class="main-container">
-
-        <!-- Columna izquierda - Publicidad -->
         <aside class="left-column">
             <div class="ad-box">
                 <h2>Plantilla Excel para Actas Digitales</h2>
                 <p>Contiene todos los campos requeridos por el GRECERT</p>
-                <p>Complete todos los campos y mantenga la extensión del archivo ".xls"</p>
-                <a href="{% static 'files/Plantilla_Acta Digital_V1.xlsx' %}" download class="btn">📥
-                    Descargar</a><!-- falta crear plantilla excel para AUJESZKY -->
+                <a href="{% static 'files/Plantilla_Acta Digital_V1.xlsx' %}" download class="btn">📥 Descargar</a>
             </div>
         </aside>
 
@@ -71,62 +58,61 @@
                 {% csrf_token %}
 
                 <div class="plans-container">
-                    {% for i in actas %}
+                    {% for i in "1234" %}
                     <div class="plan">
                         <h3>Acta {{ i }}</h3>
 
                         <div class="form-group">
-                            <label for="informe{{ i }}">Número de informe:</label>
-                            <input type="text" id="informe{{ i }}" name="informe{{ i }}" maxlength="50" {% if i == 1 %}required{% endif %}>
+                            <label>Número de informe:</label>
+                            <input type="text" name="informe{{ i }}" maxlength="50" {% if i == "1" %}required{% endif %}>
                         </div>
                         <div class="form-group">
-                            <label for="fechaRecepcion{{ i }}">Fecha de Recepción:</label>
-                            <input type="date" id="fechaRecepcion{{ i }}" name="fechaRecepcion{{ i }}">
+                            <label>Fecha de Recepción:</label>
+                            <input type="date" name="fechaRecepcion{{ i }}">
                         </div>
                         <div class="form-group">
-                            <label for="fechaInicio{{ i }}">Fecha Inicio:</label>
-                            <input type="date" id="fechaInicio{{ i }}" name="fechaInicio{{ i }}">
+                            <label>Fecha Inicio:</label>
+                            <input type="date" name="fechaInicio{{ i }}">
                         </div>
                         <div class="form-group">
-                            <label for="fechaFin{{ i }}">Fecha Fin:</label>
-                            <input type="date" id="fechaFin{{ i }}" name="fechaFin{{ i }}">
+                            <label>Fecha Fin:</label>
+                            <input type="date" name="fechaFin{{ i }}">
                         </div>
                         <div class="form-group">
-                            <label for="fechaVencimiento{{ i }}">Vencimiento Antigeno/Kit:</label>
-                            <input type="date" id="fechaVencimiento{{ i }}" name="fechaVencimiento{{ i }}">
+                            <label>Vencimiento Antigeno/Kit:</label>
+                            <input type="date" name="fechaVencimiento{{ i }}">
                         </div>
                         <div class="form-group">
-                            <label for="resultadoLetra{{ i }}">Código Resultado:</label>
-                            <input type="text" id="resultadoLetra{{ i }}" name="resultadoLetra{{ i }}" maxlength="5">
+                            <label>Código Resultado:</label>
+                            <input type="text" name="resultadoLetra{{ i }}" maxlength="5">
                         </div>
                         <div class="form-group">
-                            <label for="antigeno{{ i }}">Antigeno/Kit:</label>
-                            <input type="text" id="antigeno{{ i }}" name="antigeno{{ i }}" maxlength="25">
+                            <label>Antigeno/Kit:</label>
+                            <input type="text" name="antigeno{{ i }}" maxlength="25">
                         </div>
                         <div class="form-group">
-                            <label for="marcaAntigeno{{ i }}">Marca Antigeno/Kit:</label>
-                            <input type="text" id="marcaAntigeno{{ i }}" name="marcaAntigeno{{ i }}" maxlength="25">
+                            <label>Marca Antigeno/Kit:</label>
+                            <input type="text" name="marcaAntigeno{{ i }}" maxlength="25">
                         </div>
                         <div class="form-group">
-                            <label for="lote{{ i }}">Lote:</label>
-                            <input type="number" id="lote{{ i }}" name="lote{{ i }}" maxlength="25">
+                            <label>Lote:</label>
+                            <input type="text" name="lote{{ i }}" maxlength="25">
                         </div>
                         <div class="form-group">
-                            <label for="estampilla{{ i }}">Estampilla:</label>
-                            <input type="number" id="estampilla{{ i }}" name="estampilla{{ i }}" maxlength="25">
+                            <label>Estampilla:</label>
+                            <input type="text" name="estampilla{{ i }}" maxlength="25">
                         </div>
                         <div class="form-group">
-                            <label for="codigoDT{{ i }}">Código DT:</label>
-                            <input type="number" id="codigoDT{{ i }}" name="codigoDT{{ i }}" maxlength="20">
+                            <label>Código DT:</label>
+                            <input type="number" name="codigoDT{{ i }}" maxlength="20">
                         </div>
                         <div class="form-group">
-                            <label for="conclusion{{ i }}">Conclusión:</label>
-                            <input type="text" id="conclusion{{ i }}" name="conclusion{{ i }}" maxlength="1000">
+                            <label>Conclusión:</label>
+                            <input type="text" name="conclusion{{ i }}" maxlength="1000">
                         </div>
                         <div class="form-group">
-                            <label for="acta{{ i }}">Adjuntar PDF:</label>
-                            <input type="file" id="acta{{ i }}" name="acta{{ i }}" accept=".pdf" {% if i == 1 %}required{%
-                                endif %}>
+                            <label>Adjuntar PDF:</label>
+                            <input type="file" name="acta{{ i }}" accept=".pdf" {% if i == "1" %}required{% endif %}>
                         </div>
                     </div>
                     {% endfor %}
@@ -137,10 +123,8 @@
                     <button type="submit" class="btn" formaction="/actaAUJ_JSON/">JSON</button>
                 </div>
             </form>
-
         </section>
 
-        <!-- Columna derecha - Publicidad -->
         <aside class="right-column">
             <div class="ad-box">
                 <h1>Listado de Códigos de A.I.E.</h1>
@@ -148,7 +132,5 @@
             </div>
         </aside>
     </main>
-
 </body>
-
 </html>
