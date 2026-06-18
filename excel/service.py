@@ -1205,9 +1205,15 @@ def nexo_acta_json_aie(df_acta, request):
 
 
 class PDFProcessor:
-    def __init__(self, ruta_pdf):
-        self.ruta = ruta_pdf
-        self.doc = fitz.open(ruta_pdf)
+    def __init__(self, archivo_django):
+        # Guardamos el nombre para los logs
+        self.nombre_archivo = getattr(archivo_django, 'name', 'archivo_desconocido')
+        
+        # Leemos los bytes una sola vez
+        self.archivo_bytes = archivo_django.read()
+        
+        # Abrimos con fitz desde el stream de bytes
+        self.doc = fitz.open(stream=self.archivo_bytes, filetype="pdf")
 
         (
             self.motivos,
@@ -1216,14 +1222,14 @@ class PDFProcessor:
             self.categorias,
             self.tecnicas,
             self.sexos,
-        ) = cargar_db()
+        ) = cargar_db2()
 
     def es_valido(self):
         for i in range(min(3, len(self.doc))):
             texto = self.doc[i].get_text().strip()
             if texto:
                 return True
-        logger.warning(f"El PDF '{self.ruta}' no contiene texto legible. Puede ser una imagen escaneada sin OCR.")
+        logger.warning(f"El PDF '{self.nombre_archivo}' no contiene texto legible. Puede ser una imagen escaneada sin OCR.")
         return False
 
     def cerrar(self):
@@ -1243,7 +1249,7 @@ class PDFProcessor:
 
         bloque_tecnicas = ""
 
-        with pdfplumber.open(self.ruta) as pdf:
+        with pdfplumber.open(io.BytesIO(self.archivo_bytes)) as pdf:
             for pagina in pdf.pages:
                 contenido = pagina.extract_text()
                 if not contenido:
@@ -1302,7 +1308,7 @@ class PDFProcessor:
 
     def extraer_tablas(self):
         tablas = []
-        with pdfplumber.open(self.ruta) as pdf:
+        with pdfplumber.open(io.BytesIO(self.archivo_bytes)) as pdf:
             for pagina in pdf.pages:
                 for tabla in pagina.extract_tables():
                     tablas.append(tabla)

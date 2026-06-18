@@ -1427,7 +1427,7 @@ def excel_GRECERT(request):
 
 
 @csrf_exempt
-def convertir_Acta_bru(request):
+def convertir_Acta_bru2(request):
     # --- Consulta de códigos de rubro ---
     codigo_rubro_bru = codigoRubro(request, 2)
     codigo_rubro_bru = codigo_rubro_bru[['codigo_rubro', 'tecnica']]
@@ -1625,7 +1625,7 @@ def convertir_Acta_bru(request):
 
 
 @csrf_exempt
-def convertir_Acta_bru3(request):
+def convertir_Acta_bru(request):
     # --- Consulta de códigos de rubro ---
     codigo_rubro_bru = codigoRubro(request, 2)
     codigo_rubro_bru = codigo_rubro_bru[['codigo_rubro', 'tecnica']]
