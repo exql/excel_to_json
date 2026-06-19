@@ -1297,69 +1297,6 @@ def actaAIE_JSON(request):
 
 #Crear el excel que usa el GRECERT para importacion de resultados
 @csrf_exempt
-def excel_GRECERT_(request):
-    if request.method == 'POST':
-        try:
-            columnas = [
-                "numero", "identificación", "idTipoIdentificacion",
-                "nroInternoLab", "idCategoria", "idEdad",
-                "sexo", "fechaVacunacion", "antigenoKit",
-                "marca", "lote", "vtoAntigeno", "estampilla",
-                "idResultadoLetra", "resultadoNumero", "idUnidadDeMedida", "observación"
-            ]
-
-            # Iterar sobre los actas enviados
-            for i in range(1, 5):
-                acta = request.FILES.get(f"acta{i}")
-                if not acta:
-                    return JsonResponse({'error': f'No se proporcionó el archivo acta{i}'}, status=400)
-
-                # Extraer datos del PDF
-                df_tablas = extraer_tablas(acta)
-                datospdf = extraer_datos_pdf(acta)
-                numero_acta = datospdf.get("numeroActa", f"sin_numero_{i}")
-
-                df_acta = pd.DataFrame({
-                    "numero": df_tablas["Nro_Tubo"],
-                    "identificación": df_tablas["Identificacion"],
-                    "idTipoIdentificacion": None,
-                    "nroInternoLab": df_tablas["Nro_Tubo"],
-                    "idCategoria": None,
-                    "idEdad": None,
-                    "sexo": None,
-                    "fechaVacunacion": None,
-                    "antigenoKit": None,
-                    "marca": None,
-                    "lote": None,
-                    "vtoAntigeno": None,
-                    "estampilla": None,
-                    "idResultadoLetra": None,
-                    "resultadoNumero": None,
-                    "idUnidadDeMedida": None,
-                    "observación": None
-                })
-
-                # Generar Excel en formato .xlsx
-                nombre_archivo = f"Excel_GRECERT_ACTA{numero_acta}.xlsx"
-                response = HttpResponse(
-                    content_type='application/vnd.ms-excel'
-                )
-                response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
-
-                with pd.ExcelWriter(response, engine='openx') as writer:
-                    df_acta.to_excel(writer, sheet_name="Resultados", index=False, header=True)
-
-                # Retornar el archivo generado por cada acta
-                return response
-
-        except Exception as e:
-            return JsonResponse({'error': f'Ocurrió un error en la conversión: {str(e)}'}, status=500)
-
-    return JsonResponse({'error': 'Método no permitido'}, status=405)
-
-
-
-@csrf_exempt
 def excel_GRECERT(request):
     if request.method == 'POST':
         try:
@@ -1372,11 +1309,14 @@ def excel_GRECERT(request):
             ]
 
             acta = request.FILES.get("acta1")
-            if not acta:
-                return JsonResponse({'error': 'No se proporcionó un archivo PDF'}, status=400)
+            processor = PDFProcessor(acta)
+            if not processor.es_valido():
+                        logger.warning(" PDF sin texto legible (posible imagen sin OCR).")
+                        return JsonResponse({'error': 'El PDF no contiene texto legible (posible imagen sin OCR).'}, status=400)
 
-            df_tablas = extraer_tablas2(acta)
-            datospdf = extraer_datos_pdf(acta)
+            df_tablas = processor.extraer_tablas()
+            datospdf = processor.extraer_datos_cabecera()
+            processor.cerrar()
             numero_acta = datospdf.get("numeroActa", "sin_numero")
             
 
@@ -1424,6 +1364,7 @@ def excel_GRECERT(request):
             return JsonResponse({'error': f'Ocurrió un error en la conversión: {str(e)}'}, status=500)
 
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
 
 
 @csrf_exempt
