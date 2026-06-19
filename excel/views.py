@@ -1046,6 +1046,8 @@ def crear_json_AIE_digital(request):
 
 #En esta funcion convierto el PDF del acta digital directamente a JSON
 
+#En esta funcion convierto el PDF del acta digital directamente a JSON
+
 @csrf_exempt
 def actaBru_JSON(request):
     # --- Consulta de códigos de rubro ---
@@ -1058,12 +1060,18 @@ def actaBru_JSON(request):
             codigo_rubro_bru['tecnica'].str.contains("BPAT", case=False, na=False),
             'codigo_rubro'
         ]
-        codigo_rubro = int(tamiz_df.iloc[0]) if not tamiz_df.empty else None
+        confirmatoria_df = codigo_rubro_bru.loc[
+            codigo_rubro_bru['tecnica'].str.contains("FPA|SAT Y 2-ME|FCT|I-ELISA", case=False, na=False),
+            'codigo_rubro'
+        ]
+        if not tamiz_df.empty:
+            codigo_rubro_tamiz = int(tamiz_df.iloc[0])
+        if not confirmatoria_df.empty:
+            codigo_rubro_confirmatoria = int(confirmatoria_df.iloc[0])
     elif len(tecnicas) == 1:
         unico_df = codigo_rubro_bru['codigo_rubro']
-        codigo_rubro = int(unico_df.iloc[0]) if not unico_df.empty else None
-    else:
-        codigo_rubro = None
+        codigo_rubro_tamiz = int(unico_df.iloc[0]) if not unico_df.empty else None
+
 
     # --- Procesamiento del POST ---
     if request.method == 'POST':
@@ -1079,7 +1087,7 @@ def actaBru_JSON(request):
             df_acta = pd.DataFrame(columns=columnas)
 
             # Bucle para procesar hasta 5 actas
-            for i in range(1, 6):
+            for i in range(1, 5):
                 acta = request.FILES.get(f"acta{i}")
                 nro_informe = request.POST.get(f"informe{i}")
                 fechaRecepcion = request.POST.get(f"fechaRecepcion{i}")
@@ -1092,10 +1100,17 @@ def actaBru_JSON(request):
                 lote = request.POST.get(f"lote{i}")
                 estampilla = request.POST.get(f"estampilla{i}")
                 codigoDT = request.POST.get(f"codigoDT{i}")
+                conclusion = request.POST.get(f"conclusion{i}")
 
                 if acta and nro_informe:
-                    df_tablas = extraer_tablas2(acta)
-                    datospdf = extraer_datos_pdf(acta)
+                    processor = PDFProcessor(acta)
+                    if not processor.es_valido():
+                        logger.warning(f"Acta {nro_informe}: PDF sin texto legible (posible imagen sin OCR).")
+                        return JsonResponse({'error': 'El PDF no contiene texto legible (posible imagen sin OCR).'}, status=400)
+
+                    df_tablas = processor.extraer_tablas()
+                    datospdf = processor.extraer_datos_cabecera()
+                    processor.cerrar()
                     cant_muestras = int(len(df_tablas))
 
                     numero_acta = datospdf["numeroActa"]
@@ -1121,7 +1136,7 @@ def actaBru_JSON(request):
                         "Fecha de Recepcion": [fechaRecepcion] * len(df_tablas),
                         "Especie": [especie] * len(df_tablas),
                         "Cantidad Muestras": [cant_muestras] * len(df_tablas),
-                        "Rubro": [codigo_rubro] * len(df_tablas),
+                        "Rubro": [codigo_rubro_tamiz] * len(df_tablas),
                         "Fecha Inicio": [fechaInicio] * len(df_tablas),
                         "Fecha Fin": [fechaFin] * len(df_tablas),
                         "Resultado Letra": [resultadoLetra] * len(df_tablas),
@@ -1138,10 +1153,57 @@ def actaBru_JSON(request):
                         "Estampilla": [estampilla] * len(df_tablas),
                         "Codigo DT": [codigoDT] * len(df_tablas),
                         "Observacion del Protocolo": [None] * len(df_tablas),
-                        "Conclusion Protocolo": [None] * len(df_tablas),
+                        "Conclusion Protocolo": [conclusion]*len(df_tablas),
                     })
 
                     df_acta = pd.concat([df_acta, df_temp], ignore_index=True)
+
+                    # --- Bloque complementario (confirmatoria) ---
+                    extra_info = request.POST.get(f"toggleComp{i}")
+                    if extra_info == "on":
+                        fechaInicioComp = request.POST.get(f"fechaInicioComp{i}")
+                        fechaFinComp = request.POST.get(f"fechaFinComp{i}")
+                        fechaVencimientoComp = request.POST.get(f"fechaVencimientoComp{i}")
+                        resultadoLetraComp = request.POST.get(f"resultadoLetraComp{i}")
+                        antigenoComp = request.POST.get(f"antigenoComp{i}")
+                        marcaAntigenoComp = request.POST.get(f"marcaAntigenoComp{i}")
+                        loteComp = request.POST.get(f"loteComp{i}")
+                        estampillaComp = request.POST.get(f"estampillaComp{i}")
+
+                        resultadoLetraComp = int(resultadoLetraComp) if resultadoLetraComp and resultadoLetraComp.isdigit() else None
+
+                        if any([fechaInicioComp, fechaFinComp, resultadoLetraComp, antigenoComp]):
+                            df_comp = pd.DataFrame({
+                                "Nro Informe": [nro_informe] * len(df_tablas),
+                                "Nro Acta": [numero_acta] * len(df_tablas),
+                                "RENSPA": [RENSPA] * len(df_tablas),
+                                "Motivo": [motivo] * len(df_tablas),
+                                "SubMotivo": [submotivo] * len(df_tablas),
+                                "CUIT Funcionario": [cuitDeFuncionario] * len(df_tablas),
+                                "Fecha de Toma": [formatear_fecha(fechaToma)] * len(df_tablas),
+                                "Fecha de Recepcion": [formatear_fecha(fechaRecepcion)] * len(df_tablas),
+                                "Especie": [especie] * len(df_tablas),
+                                "Cantidad Muestras": [cant_muestras] * len(df_tablas),
+                                "Rubro": [codigo_rubro_confirmatoria] * len(df_tablas),
+                                "Fecha Inicio": [formatear_fecha(fechaInicioComp)] * len(df_tablas),
+                                "Fecha Fin": [formatear_fecha(fechaFinComp)] * len(df_tablas),
+                                "Resultado Letra": [resultadoLetraComp] * len(df_tablas),
+                                "Identificacion Muestra": df_tablas["Identificacion"].astype(str),
+                                "Identificacion Interna Laboratorio": df_tablas["Nro_Tubo"],
+                                "Tipo Identificacion": [1] * len(df_tablas),
+                                "Observacion Muestra": None,
+                                "Categoria": categoria,
+                                "Sexo": df_tablas["Sexo"],
+                                "Antigeno/Kit": [antigenoComp] * len(df_tablas),
+                                "Marca Antigeno/Kit": [marcaAntigenoComp] * len(df_tablas),
+                                "Lote": [loteComp] * len(df_tablas),
+                                "Fecha Vencimiento Antigeno/Kit": [formatear_fecha(fechaVencimientoComp)] * len(df_tablas),
+                                "Estampilla": [estampillaComp] * len(df_tablas),
+                                "Codigo DT": [codigoDT] * len(df_tablas),
+                                "Observacion del Protocolo": None,
+                                "Conclusion Protocolo": [conclusion] * len(df_tablas),
+                            })
+                            df_acta = pd.concat([df_acta, df_comp], ignore_index=True)
 
             # --- Conversión de tipos ---
             columnas_de_fecha = ["Fecha de Toma","Fecha de Recepcion","Fecha Inicio","Fecha Fin","Fecha Vencimiento Antigeno/Kit"]
@@ -1149,7 +1211,7 @@ def actaBru_JSON(request):
                 if columna in df_acta.columns:
                     df_acta[columna] = df_acta[columna].apply(formatear_fecha)
 
-            columnas_enteros = ["Nro Informe","Nro Acta","Cantidad Muestras","Rubro"]
+            columnas_enteros = ["Nro Acta","Cantidad Muestras","Rubro"]
             for columna in columnas_enteros:
                 if columna in df_acta.columns:
                     df_acta[columna] = pd.to_numeric(df_acta[columna], errors="coerce").astype("Int64")
