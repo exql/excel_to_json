@@ -1640,7 +1640,7 @@ def convertir_Acta_bru(request):
             'codigo_rubro'
         ]
         confirmatoria_df = codigo_rubro_bru.loc[
-            codigo_rubro_bru['tecnica'].str.contains("FPA|SAT Y 2-ME", case=False, na=False),
+            codigo_rubro_bru['tecnica'].str.contains("FPA|SAT Y 2-ME|FCT|I-ELISA", case=False, na=False),
             'codigo_rubro'
         ]
         if not tamiz_df.empty:
