@@ -633,7 +633,7 @@ def convertir_Acta_bru_old(request):
     return JsonResponse({'error': 'No se pudo generar el archivo excel'}, status=405)
 
 
-
+#Convierte el pdf del acta digital AIE y descarga un excel.
 @csrf_exempt
 def convertir_Acta_AIE(request):
     # --- Consulta de códigos de rubro ---
@@ -671,6 +671,7 @@ def convertir_Acta_AIE(request):
                 lote= request.POST.get(f"lote{i}")
                 estampilla= request.POST.get(f"estampilla{i}")
                 codigoDT= request.POST.get(f"codigoDT{i}")
+                conclusion= request.POST.get(f"conclusion{i}")
 
                 if acta and nro_informe:
                     df_tablas = extraer_tablas2(acta)
@@ -722,7 +723,7 @@ def convertir_Acta_AIE(request):
                         "Estampilla": [estampilla] * len(df_tablas),
                         "Codigo DT": [codigoDT] * len(df_tablas),
                         "Observacion del Protocolo": None,
-                        "Conclusion Protocolo": None,
+                        "Conclusion Protocolo": [conclusion] * len(df_tablas),
                     })
 
                     # Concatenamos al DataFrame final
@@ -736,7 +737,7 @@ def convertir_Acta_AIE(request):
                 if columna in df_acta.columns:
                     df_acta[columna] = df_acta[columna].apply(formatear_fecha)
 
-            columnas_enteros = ["Nro Informe","Nro Acta","Cantidad Muestras","Rubro"]
+            columnas_enteros = ["Cantidad Muestras","Rubro"]
             for columna in columnas_enteros:
                 if columna in df_acta.columns:
                     df_acta[columna] = pd.to_numeric(df_acta[columna], errors="coerce").astype("Int64")
@@ -1273,6 +1274,7 @@ def actaAIE_JSON(request):
                 lote = request.POST.get(f"lote{i}")
                 estampilla = request.POST.get(f"estampilla{i}")
                 codigoDT = request.POST.get(f"codigoDT{i}")
+                conclusion= request.POST.get(f"conclusion{i}")
 
                 if acta and nro_informe:
                     df_tablas = extraer_tablas2(acta)
@@ -1317,7 +1319,7 @@ def actaAIE_JSON(request):
                         "Estampilla": [estampilla] * len(df_tablas),
                         "Codigo DT": [codigoDT] * len(df_tablas),
                         "Observacion del Protocolo": [None] * len(df_tablas),
-                        "Conclusion Protocolo": [None] * len(df_tablas),
+                        "Conclusion Protocolo": [conclusion] * len(df_tablas),
                     })
 
                     df_acta = pd.concat([df_acta, df_temp], ignore_index=True)
@@ -1328,7 +1330,7 @@ def actaAIE_JSON(request):
                 if columna in df_acta.columns:
                     df_acta[columna] = df_acta[columna].apply(formatear_fecha)
 
-            columnas_enteros = ["Nro Informe","Nro Acta","Cantidad Muestras","Rubro"]
+            columnas_enteros = ["Cantidad Muestras","Rubro"]
             for columna in columnas_enteros:
                 if columna in df_acta.columns:
                     df_acta[columna] = pd.to_numeric(df_acta[columna], errors="coerce").astype("Int64")
@@ -1427,206 +1429,7 @@ def excel_GRECERT(request):
 
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
-
-
-@csrf_exempt
-def convertir_Acta_bru2(request):
-    # --- Consulta de códigos de rubro ---
-    codigo_rubro_bru = codigoRubro(request, 2)
-    codigo_rubro_bru = codigo_rubro_bru[['codigo_rubro', 'tecnica']]
-    tecnicas = codigo_rubro_bru['tecnica'].unique()
-
-    codigo_rubro_tamiz = None
-    codigo_rubro_confirmatoria = None
-
-    if len(tecnicas) > 1:
-        tamiz_df = codigo_rubro_bru.loc[
-            codigo_rubro_bru['tecnica'].str.contains("BPAT", case=False, na=False),
-            'codigo_rubro'
-        ]
-        confirmatoria_df = codigo_rubro_bru.loc[
-            codigo_rubro_bru['tecnica'].str.contains("FPA|SAT Y 2-ME", case=False, na=False),
-            'codigo_rubro'
-        ]
-        if not tamiz_df.empty:
-            codigo_rubro_tamiz = int(tamiz_df.iloc[0])
-        if not confirmatoria_df.empty:
-            codigo_rubro_confirmatoria = int(confirmatoria_df.iloc[0])
-    elif len(tecnicas) == 1:
-        unico_df = codigo_rubro_bru['codigo_rubro']
-        codigo_rubro_tamiz = int(unico_df.iloc[0]) if not unico_df.empty else None
-
-    # --- Procesamiento del POST ---
-    if request.method == 'POST':
-        try:
-            columnas = [
-                "Nro Informe","Nro Acta","RENSPA","Motivo","SubMotivo","CUIT Funcionario","Fecha de Toma","Fecha de Recepcion","Especie","Cantidad Muestras",
-                "Rubro","Fecha Inicio","Fecha Fin",
-                "Resultado Letra","Identificacion Muestra","Identificacion Interna Laboratorio", "Tipo Identificacion","Observacion Muestra",
-                "Categoria","Sexo","Antigeno/Kit","Marca Antigeno/Kit","Lote",
-                "Fecha Vencimiento Antigeno/Kit","Estampilla","Codigo DT",
-                "Observacion del Protocolo","Conclusion Protocolo"
-            ]
-            df_acta = pd.DataFrame(columns=columnas)
-
-            # --- Bucle para procesar hasta 4 actas ---
-            for i in range(1, 5):
-                acta = request.FILES.get(f"acta{i}")
-                nro_informe = request.POST.get(f"informe{i}")
-                fechaRecepcion = request.POST.get(f"fechaRecepcion{i}")
-                fechaInicio = request.POST.get(f"fechaInicio{i}")
-                fechaFin = request.POST.get(f"fechaFin{i}")
-                fechaVencimiento = request.POST.get(f"fechaVencimiento{i}")
-                resultadoLetra = request.POST.get(f"resultadoLetra{i}")
-                antigeno = request.POST.get(f"antigeno{i}")
-                marcaAntigeno = request.POST.get(f"marcaAntigeno{i}")
-                lote = request.POST.get(f"lote{i}")
-                estampilla = request.POST.get(f"estampilla{i}")
-                codigoDT = request.POST.get(f"codigoDT{i}")
-                conclusion= request.POST.get(f"conclusion{i}")
-
-                if acta and nro_informe:
-                    df_tablas = extraer_tablas2(acta)
-                    datospdf = extraer_datos_pdf(acta)
-                    cant_muestras = int(len(df_tablas))
-
-                    numero_acta = datospdf["numeroActa"]
-                    cuitDeFuncionario = datospdf["cuitDeFuncionario"]
-                    RENSPA = datospdf["RENSPA"]
-                    motivo = datospdf["Motivo"]
-                    submotivo = datospdf["SubMotivo"]
-                    fechaToma = datospdf["FechaToma"]
-                    especie = datospdf["Especie"]
-
-                    # --- Bloque principal (tamiz) ---
-                    df_temp = pd.DataFrame({
-                        "Nro Informe": [nro_informe] * len(df_tablas),
-                        "Nro Acta": [numero_acta] * len(df_tablas),
-                        "RENSPA": [RENSPA] * len(df_tablas),
-                        "Motivo": [motivo] * len(df_tablas),
-                        "SubMotivo": [submotivo] * len(df_tablas),
-                        "CUIT Funcionario": [cuitDeFuncionario] * len(df_tablas),
-                        "Fecha de Toma": [formatear_fecha(fechaToma)] * len(df_tablas),
-                        "Fecha de Recepcion": [formatear_fecha(fechaRecepcion)] * len(df_tablas),
-                        "Especie": [especie] * len(df_tablas),
-                        "Cantidad Muestras": [cant_muestras] * len(df_tablas),
-                        "Rubro": [codigo_rubro_tamiz] * len(df_tablas),
-                        "Fecha Inicio": [formatear_fecha(fechaInicio)] * len(df_tablas),
-                        "Fecha Fin": [formatear_fecha(fechaFin)] * len(df_tablas),
-                        "Resultado Letra": [resultadoLetra] * len(df_tablas),
-                        "Identificacion Muestra": df_tablas["Identificacion"].astype(str),
-                        "Identificacion Interna Laboratorio": df_tablas["Nro_Tubo"],
-                        "Tipo Identificacion": [1] * len(df_tablas),
-                        "Observacion Muestra": None,
-                        "Categoria": df_tablas["Categoria"],
-                        "Sexo": df_tablas["Sexo"],
-                        "Antigeno/Kit": [antigeno] * len(df_tablas),
-                        "Marca Antigeno/Kit": [marcaAntigeno] * len(df_tablas),
-                        "Lote": [lote] * len(df_tablas),
-                        "Fecha Vencimiento Antigeno/Kit": [formatear_fecha(fechaVencimiento)] * len(df_tablas),
-                        "Estampilla": [estampilla] * len(df_tablas),
-                        "Codigo DT": [codigoDT] * len(df_tablas),
-                        "Observacion del Protocolo": None,
-                        "Conclusion Protocolo": [conclusion]*len(df_tablas),
-                    })
-                    df_acta = pd.concat([df_acta, df_temp], ignore_index=True)
-
-                    # --- Bloque complementario (confirmatoria) ---
-                    extra_info = request.POST.get(f"toggleComp{i}")
-                    if extra_info == "on":
-                        fechaInicioComp = request.POST.get(f"fechaInicioComp{i}")
-                        fechaFinComp = request.POST.get(f"fechaFinComp{i}")
-                        fechaVencimientoComp = request.POST.get(f"fechaVencimientoComp{i}")
-                        resultadoLetraComp = request.POST.get(f"resultadoLetraComp{i}")
-                        antigenoComp = request.POST.get(f"antigenoComp{i}")
-                        marcaAntigenoComp = request.POST.get(f"marcaAntigenoComp{i}")
-                        loteComp = request.POST.get(f"loteComp{i}")
-                        estampillaComp = request.POST.get(f"estampillaComp{i}")
-
-                        if any([fechaInicioComp, fechaFinComp, resultadoLetraComp, antigenoComp]):
-                            df_comp = pd.DataFrame({
-                                "Nro Informe": [nro_informe] * len(df_tablas),
-                                "Nro Acta": [numero_acta] * len(df_tablas),
-                                "RENSPA": [RENSPA] * len(df_tablas),
-                                "Motivo": [motivo] * len(df_tablas),
-                                "SubMotivo": [submotivo] * len(df_tablas),
-                                "CUIT Funcionario": [cuitDeFuncionario] * len(df_tablas),
-                                "Fecha de Toma": [formatear_fecha(fechaToma)] * len(df_tablas),
-                                "Fecha de Recepcion": [formatear_fecha(fechaRecepcion)] * len(df_tablas),
-                                "Especie": [especie] * len(df_tablas),
-                                "Cantidad Muestras": [cant_muestras] * len(df_tablas),
-                                "Rubro": [codigo_rubro_confirmatoria] * len(df_tablas),
-                                "Fecha Inicio": [formatear_fecha(fechaInicioComp)] * len(df_tablas),
-                                "Fecha Fin": [formatear_fecha(fechaFinComp)] * len(df_tablas),
-                                "Resultado Letra": [resultadoLetraComp] * len(df_tablas),
-                                "Identificacion Muestra": df_tablas["Identificacion"].astype(str),
-                                "Identificacion Interna Laboratorio": df_tablas["Nro_Tubo"],
-                                "Tipo Identificacion": [1] * len(df_tablas),
-                                "Observacion Muestra": None,
-                                "Categoria": df_tablas["Categoria"],
-                                "Sexo": df_tablas["Sexo"],
-                                "Antigeno/Kit": [antigenoComp] * len(df_tablas),
-                                "Marca Antigeno/Kit": [marcaAntigenoComp] * len(df_tablas),
-                                "Lote": [loteComp] * len(df_tablas),
-                                "Fecha Vencimiento Antigeno/Kit": [formatear_fecha(fechaVencimientoComp)] * len(df_tablas),
-                                "Estampilla": [estampillaComp] * len(df_tablas),
-                                "Codigo DT": [codigoDT] * len(df_tablas),
-                                "Observacion del Protocolo": None,
-                                "Conclusion Protocolo": [conclusion]*len(df_tablas),
-                            })
-                            df_acta = pd.concat([df_acta, df_comp], ignore_index=True)
-
-                                    # --- Conversión de tipos antes de exportar ---
-            columnas_de_fecha = [
-                "Fecha de Toma","Fecha de Recepcion","Fecha Inicio","Fecha Fin","Fecha Vencimiento Antigeno/Kit"
-            ]
-            for columna in columnas_de_fecha:
-                if columna in df_acta.columns:
-                    df_acta[columna] = df_acta[columna].apply(formatear_fecha)
-
-            columnas_enteros = ["Nro Informe","Nro Acta","Cantidad Muestras","Rubro"]
-            for columna in columnas_enteros:
-                if columna in df_acta.columns:
-                    df_acta[columna] = pd.to_numeric(df_acta[columna], errors="coerce").astype("Int64")
-
-            # --- Generar Excel ---
-            fecha_actual = datetime.now().strftime("%Y-%m-%d")
-            nombre_archivo = f"Acta_Brucelosis_{fecha_actual}.xlsx"
-
-            response = HttpResponse(
-                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
-            response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
-
-            with pd.ExcelWriter(response, engine='openpyxl') as writer:
-                df_acta.to_excel(writer, sheet_name="Acta Digital", index=False, header=True)
-
-                # Pintar filas de confirmatoria en gris claro
-                ws = writer.sheets["Acta Digital"]
-             
-                fill_gray = PatternFill(start_color="DDDDDD", end_color="DDDDDD", fill_type="solid")
-
-                # Buscamos la columna "Rubro" para identificar confirmatoria
-                col_rubro_idx = df_acta.columns.get_loc("Rubro") + 1  # +1 porque openpyxl es 1-based
-
-                for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-                    rubro_cell = row[col_rubro_idx - 1]  # índice ajustado
-                    if rubro_cell.value == codigo_rubro_confirmatoria:
-                        for cell in row:
-                            cell.fill = fill_gray
-
-            return response
-
-        except Exception as e:
-            # Si ocurre un error en cualquier parte del proceso
-            return JsonResponse({'error': f'Ocurrió un error en la conversión: {str(e)}'}, status=500)
-
-    # Si no se recibe un POST válido
-    return JsonResponse({'error': 'No se pudo generar el archivo excel'}, status=405)
-
-
-
-
+#Convierte las actas digitales en PDF de Brucelosis a EXCEL
 @csrf_exempt
 def convertir_Acta_bru(request):
     # --- Consulta de códigos de rubro ---
