@@ -1075,7 +1075,7 @@ def json_bru(row, codigoLaboratorio):
             "analisis": row["analisis"],
             "codigoDirectorTecnico": row["Codigo DT"],
             "observaciones": observacion,    #row["Observacion del Protocolo"],
-            "conclusionTramite": conclusion_protocolo, #'--',
+            "conclusionTramite": conclusion_protocolo, 
 
         },
         "codigoTipoDeTramite": 3
@@ -1122,7 +1122,7 @@ def json_aie_digital(row,codigoLaboratorio):
             ],
             'codigoDirectorTecnico': row['Codigo DT'],
             'observaciones': observacion, 
-            "conclusionTramite": conclusion_protocolo, #'--',
+            "conclusionTramite": conclusion_protocolo, 
         },
         'codigoTipoDeTramite': "3"
     }

@@ -1211,7 +1211,7 @@ def actaBru_JSON(request):
                 if columna in df_acta.columns:
                     df_acta[columna] = df_acta[columna].apply(formatear_fecha)
 
-            columnas_enteros = ["Nro Acta","Cantidad Muestras","Rubro"]
+            columnas_enteros = ["Cantidad Muestras","Rubro"]
             for columna in columnas_enteros:
                 if columna in df_acta.columns:
                     df_acta[columna] = pd.to_numeric(df_acta[columna], errors="coerce").astype("Int64")
@@ -1789,7 +1789,7 @@ def convertir_Acta_bru(request):
                 if columna in df_acta.columns:
                     df_acta[columna] = df_acta[columna].apply(formatear_fecha)
 
-            columnas_enteros = ["Nro Informe","Nro Acta","Cantidad Muestras","Rubro"]
+            columnas_enteros = ["Cantidad Muestras","Rubro"]
             for columna in columnas_enteros:
                 if columna in df_acta.columns:
                     df_acta[columna] = pd.to_numeric(df_acta[columna], errors="coerce").astype("Int64")
