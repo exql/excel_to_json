@@ -928,6 +928,7 @@ def codigoRubro(request, analito_id: int = None):
             codigo_rubro,
             analito,
             analito_id,
+            nombreMatriz,
             tecnica
         FROM vista_laboratorio_ensayos
         WHERE laboratorio_id = %s
