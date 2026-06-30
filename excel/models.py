@@ -98,6 +98,8 @@ class DatosLab(models.Model):
     cuit = models.CharField(max_length=15, unique=True)
     telefono = models.CharField(max_length=15)
     directorTecnico = models.CharField(max_length=255)
+    codigoDT = models.IntegerField(blank=True, null=True)
+    establecimiento = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.nombreLab} ({self.numLab})"
