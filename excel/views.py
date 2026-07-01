@@ -491,6 +491,97 @@ def convertir_Triqui(request):
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 
+# NUEVA VERSION DE CONVERTIR TRIQUI - PROCESA EL EXCEL RESUMIDO Y LO CONVIERTE A JSON
+
+@csrf_exempt
+def convertir_Triqui_v2(request):
+    if request.method == 'POST':
+        if 'archivo' not in request.FILES:
+            return JsonResponse({'error': 'No se proporcionó un archivo válido'}, status=400)
+
+        try:
+            archivo = request.FILES['archivo']
+            excel_file = pd.read_excel(archivo)
+
+            # Convertir columnas específicas a tipo string
+            columns_to_str = [
+                "Nro Informe", "Establecimiento", "Nro Documento",
+                "CUIT Funcionario", "Identificacion Muestra"
+            ]
+            for column in columns_to_str:
+                excel_file[column] = excel_file[column].astype(str)
+
+            # Aplicar formato de fecha
+            columnas_de_fecha = ["Fecha de Toma", "Fecha de Recepcion", "Fecha Inicio", "Fecha conclusion"]
+            for columna in columnas_de_fecha:
+                if columna in excel_file.columns:
+                    excel_file[columna] = excel_file[columna].apply(formatear_fecha)
+
+            # Agrupar datos generales sin afectar submuestras
+            excel_file_agrupado = agrupar_por_informe_Triqui(excel_file)
+            print(f"excel_file_agrupado_1{excel_file_agrupado.columns}")
+            submuestras_dict = excel_file.groupby(["Nro Informe"]).apply(procesar_submuestras_triqui).to_dict()
+            print(f"submuestras_dict_triqui:{submuestras_dict}")
+            # Vincular submuestras a cada informe
+            
+            excel_file_agrupado["subMuestras"] = excel_file_agrupado["Nro Informe"].map(submuestras_dict)
+            
+    
+            # Generar lista JSON
+            json_data = excel_file_agrupado.apply(construir_json_triqui, axis=1).tolist()
+
+            # Guardar en archivo temporal
+            with NamedTemporaryFile(delete=False, suffix='.json') as temp_file:
+                file_path = temp_file.name
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(json_data, f, ensure_ascii=False, indent=4, default=convertir_tipo)
+
+            # Generar nombre del archivo final
+            fecha_actual = datetime.now().strftime("%d_%m_%y")
+            nombre_archivo = f"Triquinelosis_{fecha_actual}.json"
+
+            # Preparar la respuesta de descarga
+            response = HttpResponse(open(file_path, 'rb'), content_type='application/json')
+            response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
+
+            # Eliminar archivo temporal una vez enviado
+            os.unlink(file_path)
+            return response
+
+        except Exception as e:
+            return JsonResponse({'error': f'Ocurrió un error en la conversión: {str(e)}'}, status=500)
+
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # Convierte el PDF del acta digital de Brucelosis a un excel para completar.
 
 @csrf_exempt
