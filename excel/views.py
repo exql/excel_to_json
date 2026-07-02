@@ -494,7 +494,7 @@ def convertir_Triqui(request):
 # NUEVA VERSION DE CONVERTIR TRIQUI - PROCESA EL EXCEL RESUMIDO Y LO CONVIERTE A JSON
 
 @csrf_exempt
-def convertir_Triqui_v2(request):
+def convertir_Triqui_v2(request):# me esta faltando agregar una funcion que me traiga desde la BD el Nro lab, establecimiento y Còdigo DT
     if request.method == 'POST':
         if 'archivo' not in request.FILES:
             return JsonResponse({'error': 'No se proporcionó un archivo válido'}, status=400)
@@ -505,20 +505,20 @@ def convertir_Triqui_v2(request):
 
             # Convertir columnas específicas a tipo string
             columns_to_str = [
-                "Nro Informe", "Establecimiento", "Nro Documento",
-                "CUIT Funcionario", "Identificacion Muestra"
+                "Nro Informe", "Nro Autorización", "Nro Tropa", "Establecimiento",
+                "CUIT Funcionario", "Identificacion Muestra", "Conclusion Protocolo"
             ]
             for column in columns_to_str:
                 excel_file[column] = excel_file[column].astype(str)
 
             # Aplicar formato de fecha
-            columnas_de_fecha = ["Fecha de Toma", "Fecha de Recepcion", "Fecha Inicio", "Fecha conclusion"]
+            columnas_de_fecha = ["Fecha de Toma"]
             for columna in columnas_de_fecha:
                 if columna in excel_file.columns:
                     excel_file[columna] = excel_file[columna].apply(formatear_fecha)
 
             # Agrupar datos generales sin afectar submuestras
-            excel_file_agrupado = agrupar_por_informe_Triqui(excel_file)
+            excel_file_agrupado = agrupar_informe_Triqui(excel_file)
             print(f"excel_file_agrupado_1{excel_file_agrupado.columns}")
             submuestras_dict = excel_file.groupby(["Nro Informe"]).apply(procesar_submuestras_triqui).to_dict()
             print(f"submuestras_dict_triqui:{submuestras_dict}")

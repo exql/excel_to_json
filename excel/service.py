@@ -490,6 +490,17 @@ def agrupar_por_informe_Triqui(plantilla):
     return plantilla.groupby(["Nro Informe"], as_index=False)[columnas_a_agrupar].first()
 
 
+# Agrupa el excel de triqui resumido por la columna nro informe, sin afectar submuestras.
+def agrupar_informe_Triqui(plantilla):
+    columnas_a_agrupar = [
+        "Nro Informe","Nro Autorización", "CUIT Funcionario",
+        "Cantidad Animales", "Numero Tropa", "Fecha de Toma",
+        "Tamaño Muestra", "Cantidad de Pool", "Rubro",
+        "Conclusion Protocolo"
+    ]
+    return plantilla.groupby(["Nro Informe"], as_index=False)[columnas_a_agrupar].first()
+
+
 def procesar_submuestras_triqui(df):
     submuestras = []
     for _, row in df.iterrows():
@@ -527,6 +538,46 @@ def procesar_submuestras_triqui(df):
                 "estampilla": None
             })
     return submuestras
+
+# Nueva version para porcesar submuestras triqui del excel resumido
+def procesar_submuestras_triqui_V2(df):
+    submuestras = []
+    for _, row in df.iterrows():
+        identificaciones = str(row.get("Identificacion Pool", "-")).split(', ') if pd.notna(row.get("Identificacion Muestra")) else '-'
+        
+        num_submuestras = len(identificaciones)
+        observaciones += [''] * (num_submuestras - len(observaciones))
+        limiteDeteccion += [''] * (num_submuestras - len(limiteDeteccion))
+
+        for i in range(num_submuestras):
+            submuestras.append({
+                "valorComunicacionSenasa": None,
+                "limiteDeteccion": None,
+                "rec": None,
+                "incertidumbre": None,
+                "resultadoNumero": None,
+                "codigoUnidadDeMedida": 174,
+                "codigoResultadoLetra": row.get("Resultado Letra"),
+                "identificacion": identificaciones[i],
+                "identificacionInternaDeLaboratorio": None,
+                "codigoTipoIdentificacion": None,
+                "observacion": None,
+                "codigoDeEdad": None,
+                "codigoDeCategoria": None,
+                "sexo": None,
+                "fechaDeVacunacion": None,
+                "antigeno": None,
+                "marcaDeAntigeno": None,
+                "lote": None,
+                "fechaDeVencimientoDeAnalisis": None,
+                "codigoDatoAdicional": None,
+                "estampilla": None
+            })
+    return submuestras
+
+
+
+
 
 def construir_json_triqui(row):
    
@@ -610,6 +661,112 @@ def construir_json_triqui(row):
             'codigoDirectorTecnico': int(row["Codigo DT"]) if pd.notna(row["Codigo DT"]) else None,
             'observaciones': observacion,                         #row["Observacion del Protocolo"],
             "conclusionTramite": conclusion_protocolo, #"--",
+            "codigoConclusionTramite": None,
+            "codigoResultadoSigcer": None
+        },
+        "origenLote": None,
+        "datosProduccionLote": {
+            "cantidad": int(row["Cantidad Animales"]) if pd.notna(row["Cantidad Animales"]) else None,
+            "itemCantidad": "De Animales",
+            "descripcionCantidad": None,
+            "unidadesProduccion": None,
+            "codigoUnidadDeMedida": None,
+            "itemOtroCantidad": None,
+            "fecha": None,
+            "stringFecha": None,
+            "itemFecha": None,
+            "itemOtroFecha": None,
+            "numero1": int(row["Numero Tropa"]) if pd.notna(row["Numero Tropa"]) else None,
+            "itemNumero1": "De Tropa",
+            "itemOtroNro1": None,
+            "numero2": None,
+            "itemNumero2": None,
+            "itemOtroNro2": None
+        },
+        "solicitanteDeEnsayo": None,
+        "codigoTipoDeTramite": 4
+    }
+
+
+def construir_json_triqui_V2(row, Nrolab, establecimiento, codigoDT, codigoEnsayo):# me falta agregar una funcion que concatene el nro autorizacion y tropa para crear documento uno
+   
+    
+    conclusion_protocolo = (
+        str(row.get("Conclusion Protocolo"))
+        if pd.notna(row.get("Conclusion Protocolo")) else "--"
+    )
+
+    return {
+        'numeroInforme': row['Nro Informe'],
+        "fechaCarga": None,
+        "fechaEmision": None,
+        'codigoLaboratorio': row['Nro Laboratorio'],
+        'renspaUnidadProductiva': None,
+        "nroOficialEstablecimiento": int(row["Establecimiento"]) if pd.notna(row['Establecimiento']) else None,
+        "numTipoEstablecimiento": 7073,
+        'codigoMotivo': 1081,
+        'codigoSubMotivo': None,
+        'codigotipoDocumentoUno': 81,
+        'numeroDocumentoUno': row['Nro Documento'],
+        "identificacionOm": None,
+        "codigoTipoDocumentoDos": None,
+        "numeroDocumentoDos": None,
+        "codigoTipoDestino": None,
+        "codigoPaisOrigen": None,
+        "codigoPaisDestino": None,
+        "codigoBloqueOrigen": None,
+        "codigoBloqueDestino": None,
+        "cuitImportadorOExportador": None,
+        'cuitDeFuncionario': row['CUIT Funcionario'],
+        'muestra': {
+            'fechaDeToma': row['Fecha de Toma'],
+            'fechaDeRecepcion': row['Fecha de Recepcion'],
+            "fechaDeElaboracion": None,
+            "fechaDeVencimiento": None,
+            "codigoDeProducto": None,
+            "marcaDeProducto": None,
+            "idProductoAlimento": 468,
+            "tipoProductoAlimento": "SC",
+            "cantidadDeEnvases": None,
+            "codigoPresentacion": None,
+            "codigoProceso": None,
+            "precinto": "-",
+            "precintoCM1": None,
+            "cantidadCM1": None,
+            "codigoUnidadDeMedidaCM1": None,
+            "precintoCM2": None,
+            "cantidadCM2": None,
+            "codigoUnidadDeMedidaCM2": None,
+            "cantidadDeMuestra": int(row["Tamaño Muestra"]) if pd.notna(row["Tamaño Muestra"]) else None,
+            "codigoUnidadDeMedidaDeMuestra": 178,
+            "cantidadDeLote": int(row["Cantidad de Muestra"]) if pd.notna(row["Cantidad de Muestra"]) else None,
+            "codigoUnidadDeMedidaDeLote": int(row['Unidad de Medida de la Cantidad']) if pd.notna(row['Unidad de Medida de la Cantidad']) else None,
+            'analisis': [
+                {
+                    'id': 1,
+                    "codigoDeEdad": None,
+                    "codigoDeCategoria": None,
+                    "sexo": None,
+                    "antigeno": None,
+                    "marcaDeAntigeno": None,
+                    "lote": None,
+                    "fechaDeVencimientoDeAnalisis": None,
+                    "fechaDeVacunacion": None,
+                    "observacionDeAnalisis": None,
+                    'codigoEnsayo': int(row["Rubro"]) if pd.notna(row["Rubro"]) else None,
+                    "idSustancia": None,
+                    'resultadoUnico': False,
+                    "hembrasNoPreniadas": None,
+                    "codigoDatoAdicional": None,
+                    "estampilla": None,
+                    'fechaInicio': row["Fecha Inicio"],
+                    'fechaFin': row["Fecha conclusion"],
+                    'subMuestras': row["subMuestras"]
+                }
+            ],
+            'codigoDirectorTecnico': int(row["Codigo DT"]) if pd.notna(row["Codigo DT"]) else None,
+            'observaciones': None,                
+            "conclusionTramite": conclusion_protocolo,
             "codigoConclusionTramite": None,
             "codigoResultadoSigcer": None
         },
