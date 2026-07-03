@@ -166,3 +166,6 @@ docker-compose.override.yml
 # Ignorar migraciones de Django
 */migrations/
 !*/migrations/__init__.py
+
+
+vetdata-saas-a31e658a2f0c.json
