@@ -65,7 +65,6 @@ def tutoriales(request):
 def converter(request):
     return render(request, 'converter.html')
 
-
 def actadigital_AIE(request): # Hoja PDF a Excel para AIE
     return render(request, 'actadigital_AIE.html')
 
@@ -490,6 +489,12 @@ def convertir_Triqui(request):
 
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
+# DESCARGA LA PLANTILLA DE TRIQUI Negativos
+
+def plantilla_triqui_neg(request):
+    plantilla = PlantillaService(request)
+    return plantilla.triqui_negativos()
+
 
 # NUEVA VERSION DE CONVERTIR TRIQUI - PROCESA EL EXCEL RESUMIDO Y LO CONVIERTE A JSON
 
@@ -498,6 +503,22 @@ def convertir_Triqui_v2(request):# me esta faltando agregar una funcion que me t
     if request.method == 'POST':
         if 'archivo' not in request.FILES:
             return JsonResponse({'error': 'No se proporcionó un archivo válido'}, status=400)
+        
+        # Trae el codigoRubro, codigoDt y Establecimiento desde la base
+        dataLab= LabDataService(request.user)
+        rubroLab= dataLab.rubrosLab(4)
+        codigRubro= rubroLab[['codigo_rubro']]
+        codigRubro = int(codigRubro.iloc[0]) if not codigRubro.empty else None
+        datoslab= dataLab.datosLab()
+        print(datoslab.head())
+        print(datoslab.columns.tolist())
+        numLab = str(datoslab['numLab'].iloc[0]) if not datoslab.empty else None
+        codigoDt = int(datoslab['codigoDT'].iloc[0]) if not datoslab.empty else None
+        establecimiento = str(datoslab['establecimiento'].iloc[0]) if not datoslab.empty else None
+        print(f"numLab Triqui: {numLab}")
+        print(f"codigoDt Triqui: {codigoDt}")
+        print(f"Codigo Rubro Triqui: {codigRubro}")
+        print(f"establecimiento Triqui: {establecimiento}")
 
         try:
             archivo = request.FILES['archivo']
@@ -505,8 +526,8 @@ def convertir_Triqui_v2(request):# me esta faltando agregar una funcion que me t
 
             # Convertir columnas específicas a tipo string
             columns_to_str = [
-                "Nro Informe", "Nro Autorización", "Nro Tropa", "Establecimiento",
-                "CUIT Funcionario", "Identificacion Muestra", "Conclusion Protocolo"
+                "Nro Informe", "Nro Autorizacion", "Nro Tropa",
+                "CUIT Funcionario", "Identificacion Pool", "Conclusion Protocolo"
             ]
             for column in columns_to_str:
                 excel_file[column] = excel_file[column].astype(str)
@@ -520,7 +541,7 @@ def convertir_Triqui_v2(request):# me esta faltando agregar una funcion que me t
             # Agrupar datos generales sin afectar submuestras
             excel_file_agrupado = agrupar_informe_Triqui(excel_file)
             print(f"excel_file_agrupado_1{excel_file_agrupado.columns}")
-            submuestras_dict = excel_file.groupby(["Nro Informe"]).apply(procesar_submuestras_triqui).to_dict()
+            submuestras_dict = excel_file.groupby(["Nro Informe"]).apply(procesar_submuestras_triqui_V2).to_dict()
             print(f"submuestras_dict_triqui:{submuestras_dict}")
             # Vincular submuestras a cada informe
             
@@ -528,7 +549,7 @@ def convertir_Triqui_v2(request):# me esta faltando agregar una funcion que me t
             
     
             # Generar lista JSON
-            json_data = excel_file_agrupado.apply(construir_json_triqui, axis=1).tolist()
+            json_data = excel_file_agrupado.apply( lambda row: construir_json_triqui_V2(row, numLab, establecimiento, codigoDt, codigRubro), axis=1).tolist()
 
             # Guardar en archivo temporal
             with NamedTemporaryFile(delete=False, suffix='.json') as temp_file:

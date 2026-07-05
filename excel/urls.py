@@ -12,6 +12,7 @@ urlpatterns = [
     path('aie/', views.aie, name='aie'),
     path('brucelosis/', views.brucelosis, name='brucelosis'),
     path('triqui/', views.triqui, name='triqui'),
+    path('plantilla_triqui_neg/', views.plantilla_triqui_neg, name='plantilla_triqui_neg'),
     path('contacto/', views.contacto, name='contacto'),
     path('nosotros/', views.nosotros, name='nosotros'),
     path('preguntas/', views.preguntas, name='preguntas'),
@@ -25,6 +26,7 @@ urlpatterns = [
     path('convertir_aie/', views.convertir_aie, name='convertir_aie'),
     path('convertir_bru/', views.convertir_bru, name='convertir_bru'),
     path('convertir_Triqui/', views.convertir_Triqui, name='convertir_Triqui'),
+    path('convertir_Triqui_v2/', views.convertir_Triqui_v2, name='convertir_Triqui_v2'),
     path("cambiar_contraseña/<int:user_id>/", views.cambiar_contraseña, name="cambiar_contraseña"),
     path("editar_ensayos/<int:lab_id>/", views.editar_ensayos_laboratorio, name="editar_ensayos"),
 
