@@ -22,7 +22,7 @@ class AsignarLaboratorioForm(forms.ModelForm):
         model = DatosLab
         fields = [
             "numLab", "nombreLab", "email", "cuit",
-            "telefono", "directorTecnico"
+            "telefono", "directorTecnico", "codigoDT", "establecimiento"
         ]
 
 # 🧩 Formulario para asignar/editar ensayos
