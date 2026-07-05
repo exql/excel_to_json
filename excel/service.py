@@ -32,8 +32,9 @@ class LabDataService:
 
     Uso típico:
         service = LabDataService(request.user)
-        df_rubros = service.rubrosLab()
-        df_datos = service.datosLab()
+        df = service.rubrosLab()              # Todos los rubros
+        df_filtrado = service.rubrosLab(123)  # Rubros filtrados por analito_id
+        df_datos = service.datosLab()          
     """
 
     def __init__(self, user):
