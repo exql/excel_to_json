@@ -21,6 +21,122 @@ logger = logging.getLogger(__name__)
 
 
 
+# La siguiente clase refactorisa rubros_lab Y codigoRubro
+class LabDataService:
+    """
+    Servicio de acceso a datos de laboratorio.
+
+    Esta clase centraliza las consultas a la base de datos relacionadas con 
+    los laboratorios asociados a un usuario. Permite obtener información 
+    sobre rubros, analitos, ensayos y datos generales del laboratorio.
+
+    Uso típico:
+        service = LabDataService(request.user)
+        df_rubros = service.rubrosLab()
+        df_datos = service.datosLab()
+    """
+
+    def __init__(self, user):
+        """
+        Inicializa el servicio con el usuario autenticado.
+
+        Parámetros:
+        - user: instancia del usuario autenticado en Django.
+        
+        Atributos:
+        - laboratorio_id: ID del laboratorio asociado al usuario.
+        """
+        perfil = PerfilUsuario.objects.select_related("datos_lab").get(usuario=user)
+        self.laboratorio_id = perfil.datos_lab.id
+
+    def rubrosLab(self, analito_id: int = None):
+        """
+        Se conecta a la base de datos y trae los datos de la vista 
+        'vista_laboratorio_ensayos'.
+
+        Parámetros:
+        - analito_id (opcional, int): si se especifica, filtra los resultados 
+          por el analito indicado.
+
+        Retorna:
+        - DataFrame de pandas con las siguientes columnas:
+            - laboratorio_id
+            - laboratorio_numero
+            - codigo_rubro
+            - ensayo_id
+            - analito
+            - analito_id
+            - nombreMatriz
+            - tecnica
+        """
+        query = """
+            SELECT 
+                laboratorio_id,
+                laboratorio_numero,
+                codigo_rubro,
+                ensayo_id,
+                analito,
+                analito_id,
+                nombreMatriz,
+                tecnica
+            FROM vista_laboratorio_ensayos
+            WHERE laboratorio_id = %s
+        """
+        params = [self.laboratorio_id]
+
+        if analito_id is not None:
+            query += " AND analito_id = %s"
+            params.append(analito_id)
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            columns = [col[0] for col in cursor.description]
+            results = cursor.fetchall()
+
+        return pd.DataFrame(results, columns=columns)
+
+    def datosLab(self):
+        """
+        Se conecta a la base de datos y trae los datos de la vista 
+        'vista_datoslab'.
+
+        Retorna:
+        - DataFrame de pandas con las siguientes columnas:
+            - numLab
+            - nombreLab
+            - email
+            - cuit
+            - telefono
+            - directorTecnico
+            - codigoDT
+            - establecimiento
+        """
+        query = """
+            SELECT 
+                numLab,
+                nombreLab,
+                email,
+                cuit,
+                telefono,
+                directorTecnico,
+                codigoDT,
+                establecimiento
+            FROM vista_datoslab
+            WHERE numLab = %s
+        """
+        params = [self.laboratorio_id]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            columns = [col[0] for col in cursor.description]
+            results = cursor.fetchall()
+
+        return pd.DataFrame(results, columns=columns)
+
+
+
+
+
 # Se conecta a la Base de datos y trae los datos de la vista laboratorio_codigo_ensayos que contiene el codigo del rubro
 # y su respectivo analito, matríz y técnica.
 
@@ -51,7 +167,43 @@ def rubros_lab(request):
 
     return rubrosLab
 
-    # Pasar a mayúsculas, quitar espacios y eliminar tildes
+# Se conecta a la Base de datos y trae los datos de la vista vista_laboratorio_ensayos
+def codigoRubro(request, analito_id: int = None):
+    perfil = PerfilUsuario.objects.select_related("datos_lab").get(usuario=request.user)
+    laboratorio_id = perfil.datos_lab.id
+
+    query = """
+        SELECT 
+            laboratorio_id,
+            laboratorio_numero,
+            codigo_rubro,
+            ensayo_id,
+            analito,
+            analito_id,
+            nombreMatriz,
+            tecnica
+        FROM vista_laboratorio_ensayos
+        WHERE laboratorio_id = %s
+    """
+    params = [laboratorio_id]
+
+    if analito_id is not None:
+        query += " AND analito_id = %s"
+        params.append(analito_id)
+
+    with connection.cursor() as cursor:
+        cursor.execute(query, params)
+        columns = [col[0] for col in cursor.description]
+        results = cursor.fetchall()
+
+    return pd.DataFrame(results, columns=columns)
+
+
+
+
+
+
+# Pasar a mayúsculas, quitar espacios y eliminar tildes
 def normalizar(texto):
 
     texto = texto.upper().strip()
@@ -1072,36 +1224,6 @@ def extraer_datos_pdf(ruta_pdf):
     return datos
 
 
-
-
-def codigoRubro(request, analito_id: int = None):
-    perfil = PerfilUsuario.objects.select_related("datos_lab").get(usuario=request.user)
-    laboratorio_id = perfil.datos_lab.id
-
-    query = """
-        SELECT 
-            laboratorio_id,
-            laboratorio_numero,
-            codigo_rubro,
-            analito,
-            analito_id,
-            nombreMatriz,
-            tecnica
-        FROM vista_laboratorio_ensayos
-        WHERE laboratorio_id = %s
-    """
-    params = [laboratorio_id]
-
-    if analito_id is not None:
-        query += " AND analito_id = %s"
-        params.append(analito_id)
-
-    with connection.cursor() as cursor:
-        cursor.execute(query, params)
-        columns = [col[0] for col in cursor.description]
-        results = cursor.fetchall()
-
-    return pd.DataFrame(results, columns=columns)
 
 
 # Funciones para procesar el excel del acta digital - BRUCELOSIS
