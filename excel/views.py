@@ -1411,7 +1411,8 @@ def actaAIE_JSON(request):
                     submotivo = datospdf["SubMotivo"]
                     fechaToma = datospdf["FechaToma"]
                     especie = datospdf["Especie"]
-
+                    print(f"Motivo: {motivo} ")
+                    print(f"Submotivo: {submotivo} ")
                     resultadoLetra = int(resultadoLetra) if resultadoLetra and resultadoLetra.isdigit() else None
                     categoria = df_tablas["Categoria"].apply(lambda x: int(x) if pd.notna(x) and str(x).isdigit() else None)
 
