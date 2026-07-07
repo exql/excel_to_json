@@ -765,8 +765,14 @@ def convertir_Acta_AIE(request):
                 conclusion= request.POST.get(f"conclusion{i}")
 
                 if acta and nro_informe:
-                    df_tablas = extraer_tablas2(acta)
-                    datospdf = extraer_datos_pdf(acta)
+                    processor = PDFProcessor(acta)
+                    if not processor.es_valido():
+                        logger.warning(f"Acta {nro_informe}: PDF sin texto legible (posible imagen sin OCR).")
+                        return JsonResponse({'error': 'El PDF no contiene texto legible (posible imagen sin OCR).'}, status=400)
+
+                    df_tablas = processor.extraer_tablas()
+                    datospdf = processor.extraer_datos_cabecera()
+                    processor.cerrar()
                     cant_muestras = int(len(df_tablas))
                     numero_acta = datospdf["numeroActa"]
                     cuitDeFuncionario = datospdf["cuitDeFuncionario"]
@@ -1368,8 +1374,14 @@ def actaAIE_JSON(request):
                 conclusion= request.POST.get(f"conclusion{i}")
 
                 if acta and nro_informe:
-                    df_tablas = extraer_tablas2(acta)
-                    datospdf = extraer_datos_pdf(acta)
+                    processor = PDFProcessor(acta)
+                    if not processor.es_valido():
+                        logger.warning(f"Acta {nro_informe}: PDF sin texto legible (posible imagen sin OCR).")
+                        return JsonResponse({'error': 'El PDF no contiene texto legible (posible imagen sin OCR).'}, status=400)
+
+                    df_tablas = processor.extraer_tablas()
+                    datospdf = processor.extraer_datos_cabecera()
+                    processor.cerrar()
                     cant_muestras = int(len(df_tablas))
                     numero_acta = datospdf["numeroActa"]
                     cuitDeFuncionario = datospdf["cuitDeFuncionario"]
