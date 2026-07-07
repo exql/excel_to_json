@@ -1563,15 +1563,19 @@ class PDFProcessor:
                 match_fecha = re.search(r"Fecha Muestra:\s*([^\n]+?)(?=\s*Funcionario:)", contenido)
                 datos["FechaToma"] = match_fecha.group(1).strip() if match_fecha else None
 
-                match_motivo = re.search(r"Motivo:\s*(.*?)(?=\s*Submotivo:)", contenido, re.DOTALL)
+                match_motivo = re.search(r"Motivo:\s*(.*?)\s*Submotivo:", contenido, re.DOTALL)
                 if match_motivo:
-                    motivo_texto = match_motivo.group(1).strip()
+                    motivo_texto = match_motivo.group(1).replace("\n", " ").strip()
                     datos["Motivo"] = self.motivos.get(motivo_texto)
+                    print(f"motivo: {motivo_texto}")
 
-                match_submotivo = re.search(r"Submotivo:\s*(.*?)(?=\s*Expediente)", contenido, re.DOTALL)
+                # Extraer Submotivo
+                match_submotivo = re.search(r"Submotivo:\s*(.*?)(?=\s*Expediente|$)", contenido, re.DOTALL)
                 if match_submotivo:
                     submotivo_texto = match_submotivo.group(1).replace("\n", " ").strip()
                     datos["SubMotivo"] = self.submotivos.get(submotivo_texto)
+                    print(f"submotivo: {submotivo_texto}")
+
 
                 match_especie = re.search(r"Especie:\s*(.*?)(?=\s*Matriz)", contenido, re.DOTALL)
                 if match_especie:
