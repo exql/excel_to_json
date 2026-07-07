@@ -16,6 +16,8 @@
                 <strong>CUIT:</strong> {{ perfil.datos_lab.cuit }}<br>
                 <strong>Teléfono:</strong> {{ perfil.datos_lab.telefono }}<br>
                 <strong>Director Técnico:</strong> {{ perfil.datos_lab.directorTecnico }}<br>
+                <strong>Código DT:</strong> {{ perfil.datos_lab.codigoDT }}<br>
+                <strong>Establecimiento:</strong> {{ perfil.datos_lab.establecimiento }}<br>
 
                 {% if ensayos_por_lab|get_item:perfil.datos_lab.id %}
                     <strong>Ensayos Asignados:</strong>

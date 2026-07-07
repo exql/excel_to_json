@@ -21,6 +21,124 @@ logger = logging.getLogger(__name__)
 
 
 
+# La siguiente clase refactorisa rubros_lab Y codigoRubro
+class LabDataService:
+    """
+    Servicio de acceso a datos de laboratorio.
+
+    Esta clase centraliza las consultas a la base de datos relacionadas con 
+    los laboratorios asociados a un usuario. Permite obtener información 
+    sobre rubros, analitos, ensayos y datos generales del laboratorio.
+
+    Uso típico:
+        service = LabDataService(request.user)
+        df = service.rubrosLab()              # Todos los rubros
+        df_filtrado = service.rubrosLab(123)  # Rubros filtrados por analito_id
+        df_datos = service.datosLab()          
+    """
+
+    def __init__(self, user):
+        """
+        Inicializa el servicio con el usuario autenticado.
+
+        Parámetros:
+        - user: instancia del usuario autenticado en Django.
+        
+        Atributos:
+        - laboratorio_id: ID del laboratorio asociado al usuario.
+        """
+        perfil = PerfilUsuario.objects.select_related("datos_lab").get(usuario=user)
+        self.laboratorio_id = perfil.datos_lab.id
+        self.laboratorio_numero = perfil.datos_lab.numLab  # número de laboratorio real
+
+    def rubrosLab(self, analito_id: int = None):
+        """
+        Se conecta a la base de datos y trae los datos de la vista 
+        'vista_laboratorio_ensayos'.
+
+        Parámetros:
+        - analito_id (opcional, int): si se especifica, filtra los resultados 
+          por el analito indicado.
+
+        Retorna:
+        - DataFrame de pandas con las siguientes columnas:
+            - laboratorio_id
+            - laboratorio_numero
+            - codigo_rubro
+            - ensayo_id
+            - analito
+            - analito_id
+            - nombreMatriz
+            - tecnica
+        """
+        query = """
+            SELECT 
+                laboratorio_id,
+                laboratorio_numero,
+                codigo_rubro,
+                ensayo_id,
+                analito,
+                analito_id,
+                nombreMatriz,
+                tecnica
+            FROM vista_laboratorio_ensayos
+            WHERE laboratorio_id = %s
+        """
+        params = [self.laboratorio_id]
+
+        if analito_id is not None:
+            query += " AND analito_id = %s"
+            params.append(analito_id)
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            columns = [col[0] for col in cursor.description]
+            results = cursor.fetchall()
+
+        return pd.DataFrame(results, columns=columns)
+
+    def datosLab(self):
+        """
+        Se conecta a la base de datos y trae los datos de la vista 
+        'vista_datoslab'.
+
+        Retorna:
+        - DataFrame de pandas con las siguientes columnas:
+            - numLab
+            - nombreLab
+            - email
+            - cuit
+            - telefono
+            - directorTecnico
+            - codigoDT
+            - establecimiento
+        """
+        query = """
+            SELECT 
+                numLab,
+                nombreLab,
+                email,
+                cuit,
+                telefono,
+                directorTecnico,
+                codigoDT,
+                establecimiento
+            FROM vista_datoslab
+            WHERE numLab = %s
+        """
+        params = [self.laboratorio_numero]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            columns = [col[0] for col in cursor.description]
+            results = cursor.fetchall()
+
+        return pd.DataFrame(results, columns=columns)
+
+
+
+
+
 # Se conecta a la Base de datos y trae los datos de la vista laboratorio_codigo_ensayos que contiene el codigo del rubro
 # y su respectivo analito, matríz y técnica.
 
@@ -51,7 +169,43 @@ def rubros_lab(request):
 
     return rubrosLab
 
-    # Pasar a mayúsculas, quitar espacios y eliminar tildes
+# Se conecta a la Base de datos y trae los datos de la vista vista_laboratorio_ensayos
+def codigoRubro(request, analito_id: int = None):
+    perfil = PerfilUsuario.objects.select_related("datos_lab").get(usuario=request.user)
+    laboratorio_id = perfil.datos_lab.id
+
+    query = """
+        SELECT 
+            laboratorio_id,
+            laboratorio_numero,
+            codigo_rubro,
+            ensayo_id,
+            analito,
+            analito_id,
+            nombreMatriz,
+            tecnica
+        FROM vista_laboratorio_ensayos
+        WHERE laboratorio_id = %s
+    """
+    params = [laboratorio_id]
+
+    if analito_id is not None:
+        query += " AND analito_id = %s"
+        params.append(analito_id)
+
+    with connection.cursor() as cursor:
+        cursor.execute(query, params)
+        columns = [col[0] for col in cursor.description]
+        results = cursor.fetchall()
+
+    return pd.DataFrame(results, columns=columns)
+
+
+
+
+
+
+# Pasar a mayúsculas, quitar espacios y eliminar tildes
 def normalizar(texto):
 
     texto = texto.upper().strip()
@@ -493,10 +647,9 @@ def agrupar_por_informe_Triqui(plantilla):
 # Agrupa el excel de triqui resumido por la columna nro informe, sin afectar submuestras.
 def agrupar_informe_Triqui(plantilla):
     columnas_a_agrupar = [
-        "Nro Informe","Nro Autorización", "CUIT Funcionario",
-        "Cantidad Animales", "Numero Tropa", "Fecha de Toma",
-        "Tamaño Muestra", "Cantidad de Pool", "Rubro",
-        "Conclusion Protocolo"
+        "Nro Informe","Nro Autorizacion","Nro Tropa",
+        "CUIT Funcionario", "Cantidad Animales", "Fecha de Toma",
+        "Cantidad de Pool","Conclusion Protocolo"
     ]
     return plantilla.groupby(["Nro Informe"], as_index=False)[columnas_a_agrupar].first()
 
@@ -543,11 +696,13 @@ def procesar_submuestras_triqui(df):
 def procesar_submuestras_triqui_V2(df):
     submuestras = []
     for _, row in df.iterrows():
-        identificaciones = str(row.get("Identificacion Pool", "-")).split(', ') if pd.notna(row.get("Identificacion Muestra")) else '-'
-        
+        identificaciones = str(row.get("Identificacion Pool", "-")).split(', ') if pd.notna(row.get("Identificacion Pool")) else '-'
+        observaciones = str(row.get("Observacion Pool", "")).split(', ')
+        resultado_letra = str(row.get("Resultado Letra", "")).split(', ') if pd.notna(row.get("Resultado Letra")) else [None]
+
         num_submuestras = len(identificaciones)
         observaciones += [''] * (num_submuestras - len(observaciones))
-        limiteDeteccion += [''] * (num_submuestras - len(limiteDeteccion))
+        
 
         for i in range(num_submuestras):
             submuestras.append({
@@ -557,11 +712,11 @@ def procesar_submuestras_triqui_V2(df):
                 "incertidumbre": None,
                 "resultadoNumero": None,
                 "codigoUnidadDeMedida": 174,
-                "codigoResultadoLetra": row.get("Resultado Letra"),
+                "codigoResultadoLetra": int(resultado_letra[i]),
                 "identificacion": identificaciones[i],
                 "identificacionInternaDeLaboratorio": None,
                 "codigoTipoIdentificacion": None,
-                "observacion": None,
+                "observacion": observaciones[i],
                 "codigoDeEdad": None,
                 "codigoDeCategoria": None,
                 "sexo": None,
@@ -688,9 +843,16 @@ def construir_json_triqui(row):
     }
 
 
-def construir_json_triqui_V2(row, Nrolab, establecimiento, codigoDT, codigoEnsayo):# me falta agregar una funcion que concatene el nro autorizacion y tropa para crear documento uno
+def construir_json_triqui_V2(row, Nrolab, establecimiento, codigoDT, codigRubro):# me falta agregar una funcion que concatene el nro autorizacion y tropa para crear documento uno
    
-    
+    autorizacion = row.get("Nro Autorizacion")
+    tropa = row.get("Nro Tropa")
+
+    if pd.notna(autorizacion) and pd.notna(tropa):
+        numero_documento_uno = f"{autorizacion}/{tropa}"
+    else:
+        numero_documento_uno = None
+
     conclusion_protocolo = (
         str(row.get("Conclusion Protocolo"))
         if pd.notna(row.get("Conclusion Protocolo")) else "--"
@@ -700,14 +862,14 @@ def construir_json_triqui_V2(row, Nrolab, establecimiento, codigoDT, codigoEnsay
         'numeroInforme': row['Nro Informe'],
         "fechaCarga": None,
         "fechaEmision": None,
-        'codigoLaboratorio': row['Nro Laboratorio'],
+        'codigoLaboratorio': Nrolab,
         'renspaUnidadProductiva': None,
-        "nroOficialEstablecimiento": int(row["Establecimiento"]) if pd.notna(row['Establecimiento']) else None,
+        "nroOficialEstablecimiento": establecimiento if pd.notna(establecimiento) else None,
         "numTipoEstablecimiento": 7073,
         'codigoMotivo': 1081,
         'codigoSubMotivo': None,
         'codigotipoDocumentoUno': 81,
-        'numeroDocumentoUno': row['Nro Documento'],
+        'numeroDocumentoUno': numero_documento_uno,
         "identificacionOm": None,
         "codigoTipoDocumentoDos": None,
         "numeroDocumentoDos": None,
@@ -720,7 +882,7 @@ def construir_json_triqui_V2(row, Nrolab, establecimiento, codigoDT, codigoEnsay
         'cuitDeFuncionario': row['CUIT Funcionario'],
         'muestra': {
             'fechaDeToma': row['Fecha de Toma'],
-            'fechaDeRecepcion': row['Fecha de Recepcion'],
+            'fechaDeRecepcion': row['Fecha de Toma'],
             "fechaDeElaboracion": None,
             "fechaDeVencimiento": None,
             "codigoDeProducto": None,
@@ -737,13 +899,12 @@ def construir_json_triqui_V2(row, Nrolab, establecimiento, codigoDT, codigoEnsay
             "precintoCM2": None,
             "cantidadCM2": None,
             "codigoUnidadDeMedidaCM2": None,
-            "cantidadDeMuestra": int(row["Tamaño Muestra"]) if pd.notna(row["Tamaño Muestra"]) else None,
+            "cantidadDeMuestra": 5,
             "codigoUnidadDeMedidaDeMuestra": 178,
-            "cantidadDeLote": int(row["Cantidad de Muestra"]) if pd.notna(row["Cantidad de Muestra"]) else None,
-            "codigoUnidadDeMedidaDeLote": int(row['Unidad de Medida de la Cantidad']) if pd.notna(row['Unidad de Medida de la Cantidad']) else None,
+            "cantidadDeLote": int(row["Cantidad de Pool"]) if pd.notna(row["Cantidad de Pool"]) else None,
+            "codigoUnidadDeMedidaDeLote": 469,
             'analisis': [
                 {
-                    'id': 1,
                     "codigoDeEdad": None,
                     "codigoDeCategoria": None,
                     "sexo": None,
@@ -753,18 +914,18 @@ def construir_json_triqui_V2(row, Nrolab, establecimiento, codigoDT, codigoEnsay
                     "fechaDeVencimientoDeAnalisis": None,
                     "fechaDeVacunacion": None,
                     "observacionDeAnalisis": None,
-                    'codigoEnsayo': int(row["Rubro"]) if pd.notna(row["Rubro"]) else None,
+                    'codigoEnsayo': int(codigRubro) if pd.notna(codigRubro) else None,
                     "idSustancia": None,
                     'resultadoUnico': False,
                     "hembrasNoPreniadas": None,
                     "codigoDatoAdicional": None,
                     "estampilla": None,
-                    'fechaInicio': row["Fecha Inicio"],
-                    'fechaFin': row["Fecha conclusion"],
+                    'fechaInicio': row["Fecha de Toma"],
+                    'fechaFin': row["Fecha de Toma"],
                     'subMuestras': row["subMuestras"]
                 }
             ],
-            'codigoDirectorTecnico': int(row["Codigo DT"]) if pd.notna(row["Codigo DT"]) else None,
+            'codigoDirectorTecnico': int(codigoDT) if pd.notna(codigoDT) else None,
             'observaciones': None,                
             "conclusionTramite": conclusion_protocolo,
             "codigoConclusionTramite": None,
@@ -782,7 +943,7 @@ def construir_json_triqui_V2(row, Nrolab, establecimiento, codigoDT, codigoEnsay
             "stringFecha": None,
             "itemFecha": None,
             "itemOtroFecha": None,
-            "numero1": int(row["Numero Tropa"]) if pd.notna(row["Numero Tropa"]) else None,
+            "numero1": int(row["Nro Tropa"]) if pd.notna(row["Nro Tropa"]) else None,
             "itemNumero1": "De Tropa",
             "itemOtroNro1": None,
             "numero2": None,
@@ -1072,36 +1233,6 @@ def extraer_datos_pdf(ruta_pdf):
     return datos
 
 
-
-
-def codigoRubro(request, analito_id: int = None):
-    perfil = PerfilUsuario.objects.select_related("datos_lab").get(usuario=request.user)
-    laboratorio_id = perfil.datos_lab.id
-
-    query = """
-        SELECT 
-            laboratorio_id,
-            laboratorio_numero,
-            codigo_rubro,
-            analito,
-            analito_id,
-            nombreMatriz,
-            tecnica
-        FROM vista_laboratorio_ensayos
-        WHERE laboratorio_id = %s
-    """
-    params = [laboratorio_id]
-
-    if analito_id is not None:
-        query += " AND analito_id = %s"
-        params.append(analito_id)
-
-    with connection.cursor() as cursor:
-        cursor.execute(query, params)
-        columns = [col[0] for col in cursor.description]
-        results = cursor.fetchall()
-
-    return pd.DataFrame(results, columns=columns)
 
 
 # Funciones para procesar el excel del acta digital - BRUCELOSIS
@@ -1514,3 +1645,104 @@ class PDFProcessor:
         texto = normalizar(str(valor))
         cat = self.categorias.get(texto)
         return cat["sexo"] if isinstance(cat, dict) else self.sexos.get(texto)
+
+
+
+
+class PlantillaService:
+    """
+    Servicio para generar plantillas Excel dinámicas según la enfermedad.
+    
+    Cada método genera un archivo Excel con columnas específicas y lo devuelve
+    como respuesta HTTP para descarga desde el frontend.
+    
+    Uso típico:
+        service = PlantillaService(request)
+        response = service.crearPlantillas_triqui()
+    """
+
+    def __init__(self, request):
+        """
+        Inicializa el servicio con el request del usuario.
+        
+        Parámetros:
+        - request: objeto HttpRequest de Django, usado para obtener el usuario.
+        """
+        self.request = request
+
+    def exportar_excel(self, df: pd.DataFrame, nombre_archivo: str) -> HttpResponse:
+        response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
+
+        with pd.ExcelWriter(response, engine='openpyxl', datetime_format='DD/MM/YYYY') as writer:
+            df.to_excel(writer, index=False, header=True, sheet_name="Plantilla")
+
+            # Obtener la hoja activa
+            worksheet = writer.sheets["Plantilla"]
+
+            # Ajustar ancho de columnas según contenido
+            for col in worksheet.columns:
+                max_length = 0
+                col_letter = col[0].column_letter  # Letra de la columna (A, B, C...)
+                for cell in col:
+                    try:
+                        if cell.value:
+                            max_length = max(max_length, len(str(cell.value)))
+                    except:
+                        pass
+                adjusted_width = (max_length + 2)  # margen extra
+                worksheet.column_dimensions[col_letter].width = max_length + 2
+
+            # Forzar formato de fecha en la columna "Fecha de Toma"
+            for row in worksheet.iter_rows(min_row=2, max_row=worksheet.max_row, min_col=6, max_col=6):                
+                for cell in row:
+                    if isinstance(cell.value, (pd.Timestamp,)):
+                        cell.number_format = "DD/MM/YYYY HH:MM"
+
+        return response
+
+
+    def triqui_negativos(self) -> HttpResponse:
+        """
+        Genera una plantilla Excel para la enfermedad 'Triqui'.
+        
+        Retorna:
+        - HttpResponse con el archivo Excel descargable.
+        
+        Columnas de la plantilla:
+        - Nro Informe
+        - Nro Autorizacion
+        - Nro Tropa
+        - CUIT Funcionario
+        - Cantidad Animales
+        - Fecha de Toma
+        - Cantidad de Pool
+        - Identificacion Pool
+        - Resultado Letra
+        - Observacion Pool
+        - Conclusion Protocolo
+        """
+        # DataFrame con datos de ejemplo (sin lista de columnas explícita)
+        df_acta = pd.DataFrame([{
+            "Nro Informe":"3333333",
+            "Nro Autorizacion":"12345",
+            "Nro Tropa":"555",
+            "CUIT Funcionario": "20-34123029-3",
+            "Cantidad Animales": 40,
+            "Fecha de Toma": pd.to_datetime("05/07/2026 03:00"),
+            "Cantidad de Pool": 2,
+            "Identificacion Pool":"pool 1",
+            "Resultado Letra": 81,
+            "Observacion Pool":"Garron del 1 al 20",
+            "Conclusion Protocolo":"Todos los resultados fueron NO DETECTADO"
+        }])
+
+        # Conversión de columnas numéricas a enteros
+        columnas_enteros = ["Cantidad Animales","Cantidad de Pool","Resultado Letra"]
+        for columna in columnas_enteros:
+            if columna in df_acta.columns:
+                df_acta[columna] = pd.to_numeric(df_acta[columna], errors="coerce").astype("Int64")
+
+        return self.exportar_excel(df_acta, "Plantilla_Triqui_V4.xlsx")
