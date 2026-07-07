@@ -1563,19 +1563,24 @@ class PDFProcessor:
                 match_fecha = re.search(r"Fecha Muestra:\s*([^\n]+?)(?=\s*Funcionario:)", contenido)
                 datos["FechaToma"] = match_fecha.group(1).strip() if match_fecha else None
 
+                # Captura motivo hasta justo antes de Submotivo
                 match_motivo = re.search(r"Motivo:\s*(.*?)\s*Submotivo:", contenido, re.DOTALL)
+                motivo_texto = ""
                 if match_motivo:
                     motivo_texto = match_motivo.group(1).replace("\n", " ").strip()
+                    # Normalización genérica: quitar dobles espacios, uniformar mayúsculas
+                    motivo_texto = re.sub(r"\s+", " ", motivo_texto).upper()
                     datos["Motivo"] = self.motivos.get(motivo_texto)
-                    print(f"motivo: {motivo_texto}")
+                print(f"motivo: {motivo_texto}")
 
-                # Extraer Submotivo
+                # Captura submotivo hasta "Expediente" o fin de texto
                 match_submotivo = re.search(r"Submotivo:\s*(.*?)(?=\s*Expediente|$)", contenido, re.DOTALL)
+                submotivo_texto = ""
                 if match_submotivo:
                     submotivo_texto = match_submotivo.group(1).replace("\n", " ").strip()
+                    submotivo_texto = re.sub(r"\s+", " ", submotivo_texto).upper()
                     datos["SubMotivo"] = self.submotivos.get(submotivo_texto)
-                    print(f"submotivo: {submotivo_texto}")
-
+                print(f"submotivo: {submotivo_texto}")
 
                 match_especie = re.search(r"Especie:\s*(.*?)(?=\s*Matriz)", contenido, re.DOTALL)
                 if match_especie:
