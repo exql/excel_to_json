@@ -1514,17 +1514,6 @@ class PDFProcessor:
         ) = cargar_db2()
 
 
-    def _normalizar_motivo(self, texto: str) -> str:
-        """Normaliza motivos para que coincidan con la base de datos."""
-        texto = texto.replace("\n", " ")
-        texto = re.sub(r"\s+", " ", texto)
-        return texto.strip().upper()
-
-    def _normalizar_submotivo(self, texto: str) -> str:
-        """Limpieza básica de submotivos (sin normalización agresiva)."""
-        texto = texto.replace("\n", " ")
-        texto = re.sub(r"\s+", " ", texto)
-        return texto.strip().upper()    
 
     def es_valido(self):
         for i in range(min(3, len(self.doc))):
