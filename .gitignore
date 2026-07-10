@@ -169,3 +169,5 @@ docker-compose.override.yml
 
 
 vetdata-saas-a31e658a2f0c.json
+# credenciales google 
+*.json
