@@ -1256,6 +1256,16 @@ def agrupar_columnas_bru(plantilla):
                           ]
     return plantilla.groupby("Nro Informe", as_index=False)[columnas_a_agrupar].first()
 
+
+def agrupar_columnas_auj(plantilla):
+    columnas_a_agrupar = ["Nro Informe", "Nro Acta", "RENSPA", "Motivo",
+                          "SubMotivo", "CUIT Funcionario", "Fecha de Toma",
+                          "Fecha de Recepcion", "Cantidad Muestras", "Rubro",
+                           "Fecha Inicio", "Fecha Fin", "Codigo DT", 
+                           "Conclusion Protocolo"
+                           ]
+    return plantilla.groupby("Nro Informe", as_index=False)[columnas_a_agrupar].first()
+
 def analisis_bru_digital(df):
     analisis_agrupados = {}
 
@@ -1372,7 +1382,7 @@ def json_bru(row, codigoLaboratorio):
 
 
 
-# Construcción del JSON final
+# Construcción del JSON AIE final
 def json_aie_digital(row,codigoLaboratorio):
  
     observacion = (
@@ -1411,6 +1421,45 @@ def json_aie_digital(row,codigoLaboratorio):
             ],
             'codigoDirectorTecnico': row['Codigo DT'],
             'observaciones': observacion, 
+            "conclusionTramite": conclusion_protocolo, 
+        },
+        'codigoTipoDeTramite': "3"
+    }
+
+# Construcción del JSON AIE final
+def json_AUJ(row,codigoLaboratorio): 
+    
+    conclusion_protocolo = (
+        str(row.get("Conclusion Protocolo"))
+        if pd.notna(row.get("Conclusion Protocolo")) else "--"
+    )
+
+    return {
+        'numeroInforme': row['Nro Informe'],
+        'codigoLaboratorio': str(codigoLaboratorio),
+        'renspaUnidadProductiva': row['RENSPA'],
+        'codigoMotivo': row["Motivo"],
+        'codigoSubMotivo': row["SubMotivo"], # traerlo del excel
+        'codigotipoDocumentoUno': 21,
+        'numeroDocumentoUno': row['Nro Acta'],
+        'cuitDeFuncionario': row['CUIT Funcionario'],
+        'muestra': {
+            'fechaDeToma': row["Fecha de Toma"],
+            'fechaDeRecepcion': row["Fecha de Recepcion"],
+            'codigoDeProducto': "E79", 
+            'cantidadDeLote': row["Cantidad Muestras"],
+            'codigoUnidadDeMedidaDeLote': 326,
+            'analisis': [
+                {
+                    'id': 1,
+                    'codigoEnsayo': row['Rubro'],
+                    'resultadoUnico': 'False',
+                    'fechaInicio': row['Fecha Inicio'],
+                    'fechaFin': row['Fecha Fin'],
+                    'subMuestras': row["subMuestras"]
+                }
+            ],
+            'codigoDirectorTecnico': row['Codigo DT'],
             "conclusionTramite": conclusion_protocolo, 
         },
         'codigoTipoDeTramite': "3"
@@ -1490,6 +1539,45 @@ def nexo_acta_json_aie(df_acta, request):
     json_data = plantilla_agrupada.apply(lambda row: json_aie_digital(row, codigoLaboratorio), axis=1).tolist()
 
     return json_data
+
+def nexo_acta_json_auj(df_acta, request):
+    # Convertir columnas específicas a tipo string
+    columns_to_str = [
+        "Nro Informe","Nro Acta", "RENSPA", "CUIT Funcionario", "Especie",
+        "Identificacion Muestra", "Identificacion Interna Laboratorio", "Sexo",
+        "Antigeno/Kit", "Marca Antigeno/Kit", "Lote", "Estampilla"
+    ]
+    for column in columns_to_str:
+        if column in df_acta.columns:
+            df_acta[column] = df_acta[column].astype(str)
+
+    # Agrupar solo las columnas generales por número de informe
+    plantilla_agrupada = agrupar_columnas_auj(df_acta)
+
+    # Convertir columnas numéricas explícitamente y mantener NaN sin modificar
+    numeric_columns = ["Motivo","Cantidad Muestras","Codigo DT","Resultado Letra", "Categoria"]
+    for col in numeric_columns:
+        if col in plantilla_agrupada.columns:
+            plantilla_agrupada[col] = pd.to_numeric(plantilla_agrupada[col], errors='coerce')
+
+    # Generar el análisis y submuestras correctamente agrupadas
+    dataLab= LabDataService(request.user)
+    datoslab= dataLab.datosLab()
+    numLab = str(datoslab['numLab'].iloc[0]) if not datoslab.empty else None
+   
+    analisis_dict = df_acta.groupby("Nro Informe").apply(submuestras).to_dict()
+
+    # Asignar correctamente cada informe con sus análisis y submuestras
+    plantilla_agrupada["subMuestras"] = plantilla_agrupada["Nro Informe"].map(analisis_dict)
+
+    # Construcción del JSON final
+    
+    json_data = plantilla_agrupada.apply(lambda row: json_AUJ(row, numLab), axis=1).tolist()
+
+    return json_data
+
+
+
 
 
 
@@ -1715,11 +1803,25 @@ class PlantillaService:
                 adjusted_width = (max_length + 2)  # margen extra
                 worksheet.column_dimensions[col_letter].width = max_length + 2
 
-            # Forzar formato de fecha en la columna "Fecha de Toma"
-            for row in worksheet.iter_rows(min_row=2, max_row=worksheet.max_row, min_col=6, max_col=6):                
-                for cell in row:
-                    if isinstance(cell.value, (pd.Timestamp,)):
-                        cell.number_format = "DD/MM/YYYY HH:MM"
+            columnas_fecha = [
+                "Fecha de Toma",
+                "Fecha de Recepcion",
+                "Fecha Inicio",
+                "Fecha Fin",
+                "Fecha Vencimiento Antigeno/Kit"]
+
+            # Mapear nombres de columnas a índices
+            header = [cell.value for cell in next(worksheet.iter_rows(min_row=1, max_row=1))]
+            mapa_columnas = {nombre: idx+1 for idx, nombre in enumerate(header)}
+
+            for nombre_col in columnas_fecha:
+                if nombre_col in mapa_columnas:
+                    col_idx = mapa_columnas[nombre_col]
+                    for row in worksheet.iter_rows(min_row=2, max_row=worksheet.max_row,
+                                               min_col=col_idx, max_col=col_idx):
+                        for cell in row:
+                            if isinstance(cell.value, (pd.Timestamp, datetime)):
+                                cell.number_format = "DD/MM/YYYY HH:MM"
 
         return response
 
@@ -1766,3 +1868,75 @@ class PlantillaService:
                 df_acta[columna] = pd.to_numeric(df_acta[columna], errors="coerce").astype("Int64")
 
         return self.exportar_excel(df_acta, "Plantilla_Triqui_V4.xlsx")
+    
+    
+    def aujezsky(self) -> HttpResponse:
+        """
+        Genera una plantilla Excel para la enfermedad 'AUJEZSKY'.
+        
+        Retorna:
+        - HttpResponse con el archivo Excel descargable.
+        
+        Columnas de la plantilla:
+        - Nro Informe
+        - Nro Acta    
+        - RENSPA 
+        - Motivo
+        - SubMotivo
+        - CUIT Funcionario
+        - Fecha de Toma
+        - Fecha de Recepcion
+        - Cantidad Muestras
+        - Fecha Inicio
+        - Fecha Fin
+        - Resultado Letra
+        - Identificacion Muestra
+        - Identificacion Interna Laboratorio
+        - Observacion Muestra
+        - Categoria
+        - Sexo
+        - Antigeno/Kit
+        - Marca Antigeno/Kit
+        - Lote
+        - Fecha Vencimiento Antigeno/Kit
+        - Estampilla
+        - Conclusion Protocolo
+        """
+        # DataFrame con datos de ejemplo (sin lista de columnas explícita)
+        df_acta = pd.DataFrame([{
+            "Nro Informe":"3333333",
+            "Nro Acta":"1234",
+            "RENSPA": "00.000.0.00000/00",
+            "Motivo":137,
+            "SubMotivo":234,
+            "CUIT Funcionario": "20-34123029-3",
+            "Fecha de Toma": pd.to_datetime("05/07/2026 03:00"),
+            "Fecha de Recepcion": pd.to_datetime("05/07/2026 03:00"),
+            "Cantidad Muestras": 50,
+            "Fecha Inicio": pd.to_datetime("05/07/2026 03:00"),
+            "Fecha Fin": pd.to_datetime("05/07/2026 03:00"),
+            "Resultado Letra": 1,
+            "Identificacion Muestra": "19",
+            "Identificacion Interna Laboratorio": "Número de tubo",
+            "Observacion Muestra": "Opcional",
+            "Categoria":15,
+            "Sexo": "H",
+            "Antigeno/Kit":"Kit",
+            "Marca Antigeno/Kit":"NANO",
+            "Lote":1254,
+            "Fecha Vencimiento Antigeno/Kit":pd.to_datetime("05/10/2026 03:00"),
+            "Estampilla":"12545M",            
+            "Conclusion Protocolo":"Todos los sueros analizados son Negativos"
+        }])
+
+        # Conversión de columnas numéricas a enteros
+        columnas_enteros = ["Cantidad Animales","Cantidad de Pool","Resultado Letra"]
+        for columna in columnas_enteros:
+            if columna in df_acta.columns:
+                df_acta[columna] = pd.to_numeric(df_acta[columna], errors="coerce").astype("Int64")
+
+        return self.exportar_excel(df_acta, "Plantilla_AUJESZKY_V1.xlsx")
+    
+
+
+
