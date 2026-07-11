@@ -48,13 +48,13 @@
             <div class="ad-box">
                 <h2>Plantilla Excel para Actas Digitales</h2>
                 <p>Contiene todos los campos requeridos por el GRECERT</p>
-                <a href="{% static 'files/Plantilla_Acta Digital_V1.xlsx' %}" download class="btn">📥 Descargar</a>
+                <a href="/plantilla_AUJEZSKY/" download class="btn">📥 Descargar</a>
             </div>
         </aside>
 
         <section class="central-content">
             <h1>Procesar las Actas Digitales de AUJESZKY</h1>
-            <form action="/convertir_Acta_AIE/" method="post" enctype="multipart/form-data">
+            <form action="/convertir_Acta_Auj/" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
 
                 <div class="plans-container">
@@ -102,10 +102,7 @@
                             <label>Estampilla:</label>
                             <input type="text" name="estampilla{{ i }}" maxlength="25">
                         </div>
-                        <div class="form-group">
-                            <label>Código DT:</label>
-                            <input type="number" name="codigoDT{{ i }}" maxlength="20">
-                        </div>
+                        
                         <div class="form-group">
                             <label>Conclusión:</label>
                             <input type="text" name="conclusion{{ i }}" maxlength="1000">
@@ -127,8 +124,8 @@
 
         <aside class="right-column">
             <div class="ad-box">
-                <h1>Listado de Códigos de A.I.E.</h1>
-                <p>Aquí podrá descargar el Listado de Códigos para completar el excel de A.I.E.</p>
+                <h1>Listado de Códigos de AUJESZKY.</h1>
+                <p>Aquí podrá descargar el Listado de Códigos para completar el excel</p>
             </div>
         </aside>
     </main>
