@@ -574,35 +574,6 @@ def convertir_Triqui_v2(request):# me esta faltando agregar una funcion que me t
 
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     # Convierte el PDF del acta digital de Brucelosis a un excel para completar.
 
 @csrf_exempt
@@ -863,134 +834,6 @@ def convertir_Acta_AIE(request):
             # --- Generar Excel ---
             fecha_actual = datetime.now().strftime("%d-%m-%Y")
             nombre_archivo = f"Acta_AIE_{fecha_actual}.xlsx"
-
-            response = HttpResponse(
-                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
-            response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
-
-            # Exportar con formato de fecha real
-            with pd.ExcelWriter(response, engine='openpyxl', datetime_format='DD/MM/YYYY') as writer:
-                df_acta.to_excel(writer, sheet_name="Acta Digital", index=False, header=True)
-
-            return response
-
-        except Exception as e:
-            return JsonResponse({'error': f'Ocurrió un error en la conversión: {str(e)}'}, status=500)
-
-    return JsonResponse({'error': 'No se pudo generar el archivo excel'}, status=405)
-
-@csrf_exempt
-def convertir_Acta_Auj(request):
-    # --- Consulta de códigos de rubro ---
-    codigo_rubro_auj = codigoRubro(request, 5)  # Poner el id del analito en la base de datos.
-    codigo_rubro_auj = codigo_rubro_auj[['codigo_rubro']]
-    codigo_rubro_auj = int(codigo_rubro_auj.iloc[0]) if not codigo_rubro_auj.empty else None
-    print(f"Rubro: {codigo_rubro_auj}")
-
-    # --- Procesamiento del POST ---
-    if request.method == 'POST':
-        try:
-            # Definimos columnas del DataFrame final
-            columnas = [
-                "Nro Informe","Nro Acta","RENSPA","Motivo",
-                "SubMotivo","CUIT Funcionario","Fecha de Toma","Fecha de Recepcion",
-                "Especie","Cantidad Muestras","Rubro","Fecha Inicio","Fecha Fin",
-                "Resultado Letra","Identificacion Muestra","Identificacion Interna Laboratorio", "Tipo Identificacion","Observacion Muestra",
-                "Categoria","Sexo","Antigeno/Kit","Marca Antigeno/Kit","Lote",
-                "Fecha Vencimiento Antigeno/Kit","Estampilla","Codigo DT",
-                "Observacion del Protocolo","Conclusion Protocolo"
-            ]
-            df_acta = pd.DataFrame(columns=columnas)
-
-            #  Bucle para procesar hasta 4 actas
-            for i in range(1, 5):
-                acta = request.FILES.get(f"acta{i}")
-                nro_informe = request.POST.get(f"informe{i}")
-                fechaRecepcion= request.POST.get(f"fechaRecepcion5{i}")
-                fechaInicio= request.POST.get(f"fechaInicio{i}")
-                fechaFin= request.POST.get(f"fechaFin{i}")
-                fechaVencimiento=request.POST.get(f"fechaVencimiento{i}")
-                resultadoLetra= request.POST.get(f"resultadoLetra{i}")
-                antigeno= request.POST.get(f"antigeno{i}")
-                marcaAntigeno= request.POST.get(f"marcaAntigeno{i}")
-                lote= request.POST.get(f"lote{i}")
-                estampilla= request.POST.get(f"estampilla{i}")
-                codigoDT= request.POST.get(f"codigoDT{i}")
-                conclusion= request.POST.get(f"conclusion{i}")
-
-                if acta and nro_informe:
-                    df_tablas = extraer_tablas2(acta)
-                    datospdf = extraer_datos_pdf(acta)
-                    cant_muestras = int(len(df_tablas))
-                    numero_acta = datospdf["numeroActa"]
-                    cuitDeFuncionario = datospdf["cuitDeFuncionario"]
-                    RENSPA = datospdf["RENSPA"]
-                    motivo = datospdf["Motivo"] #importar las tablas de motivos y sumotivos a la base de datos para que los pueda buscar
-                    submotivo = datospdf["SubMotivo"]
-                    fechaToma = datospdf["FechaToma"]
-                    especie = datospdf["Especie"] # importar las especies de porcinos a la base de datos
-
-                    print(f"Acta {i}: {len(df_tablas)} identificaciones")
-                    print(f"Número de acta encontrado: {numero_acta}")
-                    print(f"CUIT del Funcionario: {cuitDeFuncionario}")
-                    print(f"Nro. Oficial Senasa: {RENSPA}")
-                    print(f"Motivo: {motivo}")
-                    print(f"submotivo: {submotivo}")
-                    print(f"FechaToma: {fechaToma}")
-                    print(f"Especie: {especie}")
-
-                    # Expandimos cada identificación en una fila
-                    df_temp = pd.DataFrame({
-                        "Nro Informe": [nro_informe] * len(df_tablas),
-                        "Nro Acta": [numero_acta] * len(df_tablas),
-                        "RENSPA": [RENSPA] * len(df_tablas),
-                        "Motivo": [motivo] * len(df_tablas),
-                        "SubMotivo": [submotivo] * len(df_tablas),
-                        "CUIT Funcionario": [cuitDeFuncionario] * len(df_tablas),
-                        "Fecha de Toma": [fechaToma] * len(df_tablas),
-                        "Fecha de Recepcion": [fechaRecepcion] * len(df_tablas),
-                        "Especie": [especie] * len(df_tablas),
-                        "Cantidad Muestras": [cant_muestras] * len(df_tablas),
-                        "Rubro": [codigo_rubro_auj] * len(df_tablas),
-                        "Fecha Inicio": [fechaInicio] * len(df_tablas),
-                        "Fecha Fin": [fechaFin] * len(df_tablas),
-                        "Resultado Letra": [resultadoLetra] * len(df_tablas),
-                        "Identificacion Muestra": df_tablas["Identificacion"].astype(str),
-                        "Identificacion Interna Laboratorio": df_tablas["Nro_Tubo"],
-                        "Tipo Identificacion": 12,
-                        "Observacion Muestra": None,
-                        "Categoria": df_tablas["Categoria"],
-                        "Sexo": df_tablas["Sexo"],
-                        "Antigeno/Kit": [antigeno] * len(df_tablas),
-                        "Marca Antigeno/Kit": [marcaAntigeno] * len(df_tablas),
-                        "Lote": [lote] * len(df_tablas),
-                        "Fecha Vencimiento Antigeno/Kit": [fechaVencimiento] * len(df_tablas),
-                        "Estampilla": [estampilla] * len(df_tablas),
-                        "Codigo DT": [codigoDT] * len(df_tablas),
-                        "Observacion del Protocolo": None,
-                        "Conclusion Protocolo": conclusion * len(df_tablas),
-                    })
-
-                    # Concatenamos al DataFrame final
-                    df_acta = pd.concat([df_acta, df_temp], ignore_index=True)
-
-            # --- Conversión de tipos antes de exportar ---
-            columnas_de_fecha = [
-                "Fecha de Toma","Fecha de Recepcion","Fecha Inicio","Fecha Fin","Fecha Vencimiento Antigeno/Kit"
-            ]
-            for columna in columnas_de_fecha:
-                if columna in df_acta.columns:
-                    df_acta[columna] = df_acta[columna].apply(formatear_fecha)
-
-            columnas_enteros = ["Nro Informe","Nro Acta","Cantidad Muestras","Rubro"]
-            for columna in columnas_enteros:
-                if columna in df_acta.columns:
-                    df_acta[columna] = pd.to_numeric(df_acta[columna], errors="coerce").astype("Int64")
-
-            # --- Generar Excel ---
-            fecha_actual = datetime.now().strftime("%d-%m-%Y")
-            nombre_archivo = f"Acta_AUJESZKY_{fecha_actual}.xlsx"
 
             response = HttpResponse(
                 content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -1754,3 +1597,270 @@ def convertir_Acta_bru(request):
 
     return JsonResponse({'error': 'No se pudo generar el archivo excel'}, status=405)
 
+# DESCARGA LA PLANTILLA DE AUJEZSKY
+
+def plantilla_AUJEZSKY(request):
+    plantilla = PlantillaService(request)
+    return plantilla.aujezsky()
+
+
+# Convierte el acta digital en un excel para poder completarlo
+@csrf_exempt
+def convertir_Acta_Auj(request):
+        
+    if request.method == 'POST':
+        try:
+            # Definimos columnas del DataFrame final
+            columnas = [
+                "Nro Informe","Nro Acta","RENSPA","Motivo",
+                "SubMotivo","CUIT Funcionario","Fecha de Toma","Fecha de Recepcion",
+                "Cantidad Muestras","Fecha Inicio","Fecha Fin",
+                "Resultado Letra","Identificacion Muestra","Identificacion Interna Laboratorio",
+                "Tipo Identificacion","Observacion Muestra",
+                "Categoria","Sexo","Antigeno/Kit","Marca Antigeno/Kit","Lote",
+                "Fecha Vencimiento Antigeno/Kit","Estampilla","Conclusion Protocolo"
+            ]
+            df_acta = pd.DataFrame(columns=columnas)
+
+            #  Bucle para procesar hasta 4 actas
+            for i in range(1, 5):
+                acta = request.FILES.get(f"acta{i}")
+                nro_informe = request.POST.get(f"informe{i}")
+                fechaRecepcion= request.POST.get(f"fechaRecepcion5{i}")
+                fechaInicio= request.POST.get(f"fechaInicio{i}")
+                fechaFin= request.POST.get(f"fechaFin{i}")
+                fechaVencimiento=request.POST.get(f"fechaVencimiento{i}")
+                resultadoLetra= request.POST.get(f"resultadoLetra{i}")
+                antigeno= request.POST.get(f"antigeno{i}")
+                marcaAntigeno= request.POST.get(f"marcaAntigeno{i}")
+                lote= request.POST.get(f"lote{i}")
+                estampilla= request.POST.get(f"estampilla{i}")
+                conclusion= request.POST.get(f"conclusion{i}")
+
+                if acta and nro_informe:
+                    processor = PDFProcessor(acta)
+                    if not processor.es_valido():
+                        logger.warning(f"Acta {nro_informe}: PDF sin texto legible (posible imagen sin OCR).")
+                        return JsonResponse({'error': 'El PDF no contiene texto legible (posible imagen sin OCR).'}, status=400)
+
+                    df_tablas = processor.extraer_tablas()
+                    datospdf = processor.extraer_datos_cabecera()
+                    processor.cerrar()
+                    cant_muestras = int(len(df_tablas))
+                    numero_acta = datospdf["numeroActa"]
+                    cuitDeFuncionario = datospdf["cuitDeFuncionario"]
+                    RENSPA = datospdf["RENSPA"]
+                    motivo = datospdf["Motivo"] #importar las tablas de motivos y sumotivos a la base de datos para que los pueda buscar
+                    submotivo = datospdf["SubMotivo"]
+                    fechaToma = datospdf["FechaToma"]
+                    especie = datospdf["Especie"] # importar las especies de porcinos a la base de datos
+
+                    print(f"Acta {i}: {len(df_tablas)} identificaciones")
+                    print(f"Número de acta encontrado: {numero_acta}")
+                    print(f"CUIT del Funcionario: {cuitDeFuncionario}")
+                    print(f"Nro. Oficial Senasa: {RENSPA}")
+                    print(f"Motivo: {motivo}")
+                    print(f"submotivo: {submotivo}")
+                    print(f"FechaToma: {fechaToma}")
+                    print(f"Especie: {especie}")
+
+                    # Expandimos cada identificación en una fila
+                    df_temp = pd.DataFrame({
+                        "Nro Informe": [nro_informe] * len(df_tablas),
+                        "Nro Acta": [numero_acta] * len(df_tablas),
+                        "RENSPA": [RENSPA] * len(df_tablas),
+                        "Motivo": [motivo] * len(df_tablas),
+                        "SubMotivo": [submotivo] * len(df_tablas),
+                        "CUIT Funcionario": [cuitDeFuncionario] * len(df_tablas),
+                        "Fecha de Toma": [fechaToma] * len(df_tablas),
+                        "Fecha de Recepcion": [fechaRecepcion] * len(df_tablas),
+                        "Cantidad Muestras": [cant_muestras] * len(df_tablas),
+                        "Fecha Inicio": [fechaInicio] * len(df_tablas),
+                        "Fecha Fin": [fechaFin] * len(df_tablas),
+                        "Resultado Letra": [resultadoLetra] * len(df_tablas),
+                        "Identificacion Muestra": df_tablas["Identificacion"].astype(str),
+                        "Identificacion Interna Laboratorio": df_tablas["Nro_Tubo"],
+                        "Tipo Identificacion": 2,
+                        "Observacion Muestra": None,
+                        "Categoria": df_tablas["Categoria"],
+                        "Sexo": df_tablas["Sexo"],
+                        "Antigeno/Kit": [antigeno] * len(df_tablas),
+                        "Marca Antigeno/Kit": [marcaAntigeno] * len(df_tablas),
+                        "Lote": [lote] * len(df_tablas),
+                        "Fecha Vencimiento Antigeno/Kit": [fechaVencimiento] * len(df_tablas),
+                        "Estampilla": [estampilla] * len(df_tablas),
+                        "Conclusion Protocolo": conclusion * len(df_tablas),
+                    })
+
+                    # Concatenamos al DataFrame final
+                    df_acta = pd.concat([df_acta, df_temp], ignore_index=True)
+
+            # --- Conversión de tipos antes de exportar ---
+            columnas_de_fecha = [
+                "Fecha de Toma","Fecha de Recepcion","Fecha Inicio","Fecha Fin","Fecha Vencimiento Antigeno/Kit"
+            ]
+            for columna in columnas_de_fecha:
+                if columna in df_acta.columns:
+                    df_acta[columna] = df_acta[columna].apply(formatear_fecha)
+
+            columnas_enteros = ["Cantidad Muestras"]
+            for columna in columnas_enteros:
+                if columna in df_acta.columns:
+                    df_acta[columna] = pd.to_numeric(df_acta[columna], errors="coerce").astype("Int64")
+
+            # --- Generar Excel ---
+            fecha_actual = datetime.now().strftime("%d-%m-%Y")
+            nombre_archivo = f"Acta_AUJESZKY_{fecha_actual}.xlsx"
+
+            response = HttpResponse(
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
+
+            # Exportar con formato de fecha real
+            with pd.ExcelWriter(response, engine='openpyxl', datetime_format='DD/MM/YYYY') as writer:
+                df_acta.to_excel(writer, sheet_name="Acta Digital", index=False, header=True)
+
+            return response
+
+        except Exception as e:
+            return JsonResponse({'error': f'Ocurrió un error en la conversión: {str(e)}'}, status=500)
+
+    return JsonResponse({'error': 'No se pudo generar el archivo excel'}, status=405)
+
+
+@csrf_exempt
+def actaAUJ_JSON(request):
+    # --- Consulta de códigos de rubro ---
+    codRubro = codigoRubro(request, 5)  # id del analito AUJ en la base de datos
+    codRubro = codRubro[['codigo_rubro']]
+    codRubro = int(codRubro.iloc[0]) if not codRubro.empty else None
+
+# Trae el codigoRubro, codigoDt y Establecimiento desde la base
+    dataLab= LabDataService(request.user)
+    rubroLab= dataLab.rubrosLab(5)
+    codRubro= rubroLab[['codigo_rubro']]
+    codRubro = int(codRubro.iloc[0]) if not codRubro.empty else None
+    datoslab= dataLab.datosLab()
+    print(datoslab.head())
+    print(datoslab.columns.tolist())
+    numLab = str(datoslab['numLab'].iloc[0]) if not datoslab.empty else None
+    codigoDt = int(datoslab['codigoDT'].iloc[0]) if not datoslab.empty else None
+    print(f"numLab AUJ: {numLab}")
+    print(f"codigoDt AUJ: {codigoDt}")
+    print(f"Codigo Rubro AUJ: {codRubro}")
+
+    # --- Procesamiento del POST ---
+    if request.method == 'POST':
+        try:
+            columnas = [
+                "Nro Informe","Nro Acta","RENSPA","Motivo","SubMotivo","CUIT Funcionario",
+                "Fecha de Toma","Fecha de Recepcion","Especie","Cantidad Muestras",
+                "Rubro","Fecha Inicio","Fecha Fin","Resultado Letra",
+                "Identificacion Muestra","Identificacion Interna Laboratorio",
+                "Tipo Identificacion","Observacion Muestra","Categoria","Sexo",
+                "Antigeno/Kit","Marca Antigeno/Kit","Lote","Fecha Vencimiento Antigeno/Kit",
+                "Estampilla","Codigo DT","Observacion del Protocolo","Conclusion Protocolo"
+            ]
+            df_acta = pd.DataFrame(columns=columnas)
+
+            # Bucle para procesar hasta 4 actas
+            for i in range(1, 5):
+                acta = request.FILES.get(f"acta{i}")
+                nro_informe = request.POST.get(f"informe{i}")
+                fechaRecepcion = request.POST.get(f"fechaRecepcion{i}")
+                fechaInicio = request.POST.get(f"fechaInicio{i}")
+                fechaFin = request.POST.get(f"fechaFin{i}")
+                fechaVencimiento = request.POST.get(f"fechaVencimiento{i}")
+                resultadoLetra = request.POST.get(f"resultadoLetra{i}")
+                antigeno = request.POST.get(f"antigeno{i}")
+                marcaAntigeno = request.POST.get(f"marcaAntigeno{i}")
+                lote = request.POST.get(f"lote{i}")
+                estampilla = request.POST.get(f"estampilla{i}")
+                conclusion= request.POST.get(f"conclusion{i}")
+
+                if acta and nro_informe:
+                    processor = PDFProcessor(acta)
+                    if not processor.es_valido():
+                        logger.warning(f"Acta {nro_informe}: PDF sin texto legible (posible imagen sin OCR).")
+                        return JsonResponse({'error': 'El PDF no contiene texto legible (posible imagen sin OCR).'}, status=400)
+
+                    df_tablas = processor.extraer_tablas()
+                    datospdf = processor.extraer_datos_cabecera()
+                    processor.cerrar()
+                    cant_muestras = int(len(df_tablas))
+                    numero_acta = datospdf["numeroActa"]
+                    cuitDeFuncionario = datospdf["cuitDeFuncionario"]
+                    RENSPA = datospdf["RENSPA"]
+                    motivo = datospdf["Motivo"]
+                    submotivo = datospdf["SubMotivo"]
+                    fechaToma = datospdf["FechaToma"]
+                    especie = datospdf["Especie"]
+                    print(f"Motivo: {motivo} ")
+                    print(f"Submotivo: {submotivo} ")
+                    resultadoLetra = int(resultadoLetra) if resultadoLetra and resultadoLetra.isdigit() else None
+                    categoria = df_tablas["Categoria"].apply(lambda x: int(x) if pd.notna(x) and str(x).isdigit() else None)
+
+                    df_temp = pd.DataFrame({
+                        "Nro Informe": [nro_informe] * len(df_tablas),
+                        "Nro Acta": [numero_acta] * len(df_tablas),
+                        "RENSPA": [RENSPA] * len(df_tablas),
+                        "Motivo": [motivo] * len(df_tablas),
+                        "SubMotivo": [submotivo] * len(df_tablas),
+                        "CUIT Funcionario": [cuitDeFuncionario] * len(df_tablas),
+                        "Fecha de Toma": [fechaToma] * len(df_tablas),
+                        "Fecha de Recepcion": [fechaRecepcion] * len(df_tablas),
+                        "Especie": [especie] * len(df_tablas),
+                        "Cantidad Muestras": [cant_muestras] * len(df_tablas),
+                        "Rubro": [codRubro] * len(df_tablas),
+                        "Fecha Inicio": [fechaInicio] * len(df_tablas),
+                        "Fecha Fin": [fechaFin] * len(df_tablas),
+                        "Resultado Letra": [resultadoLetra] * len(df_tablas),
+                        "Identificacion Muestra": df_tablas["Identificacion"].astype(str),
+                        "Identificacion Interna Laboratorio": df_tablas["Nro_Tubo"],
+                        "Tipo Identificacion": [2] * len(df_tablas), 
+                        "Observacion Muestra": [None] * len(df_tablas),
+                        "Categoria": categoria,
+                        "Sexo": df_tablas["Sexo"],
+                        "Antigeno/Kit": [antigeno] * len(df_tablas),
+                        "Marca Antigeno/Kit": [marcaAntigeno] * len(df_tablas),
+                        "Lote": [lote] * len(df_tablas),
+                        "Fecha Vencimiento Antigeno/Kit": [fechaVencimiento] * len(df_tablas),
+                        "Estampilla": [estampilla] * len(df_tablas),
+                        "Codigo DT": [codigoDt] * len(df_tablas),
+                        "Conclusion Protocolo": [conclusion] * len(df_tablas),
+                    })
+
+                    df_acta = pd.concat([df_acta, df_temp], ignore_index=True)
+
+            # --- Conversión de tipos ---
+            columnas_de_fecha = ["Fecha de Toma","Fecha de Recepcion","Fecha Inicio","Fecha Fin","Fecha Vencimiento Antigeno/Kit"]
+            for columna in columnas_de_fecha:
+                if columna in df_acta.columns:
+                    df_acta[columna] = df_acta[columna].apply(formatear_fecha)
+
+            columnas_enteros = ["Cantidad Muestras","Rubro"]
+            for columna in columnas_enteros:
+                if columna in df_acta.columns:
+                    df_acta[columna] = pd.to_numeric(df_acta[columna], errors="coerce").astype("Int64")
+
+            # --- Procesar DataFrame y generar JSON ---
+            json_data = nexo_acta_json_auj(df_acta, request)
+
+            fecha_actual = datetime.now().strftime("%d_%m_%y")
+            nombre_archivo = f"JSON_AUJESZKY_{fecha_actual}.json"
+
+            response = HttpResponse(
+                json.dumps(json_data, ensure_ascii=False, indent=4, default=convertir_tipo),
+                content_type='application/json'
+            )
+            response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
+            return response
+
+        except Exception as e:
+            import traceback
+            error_msg = traceback.format_exc()
+            print(f"❌ Error en la conversión:\n{error_msg}")
+            return JsonResponse({'error': f'Ocurrió un error en la conversión: {str(e)}'}, status=500)
+
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
