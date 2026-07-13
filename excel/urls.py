@@ -40,7 +40,9 @@ urlpatterns = [
     path('Actadigital_Aujeszky/', views.Actadigital_Aujeszky, name='Actadigital_Aujeszky'),
     path('convertir_Acta_Auj/', views.convertir_Acta_Auj, name='convertir_Acta_Auj'),
     path('actaAUJ_JSON/', views.actaAUJ_JSON, name='actaAUJ_JSON'),
-    path('plantilla_AUJEZSKY/', views.plantilla_AUJEZSKY, name='plantilla_AUJEZSKY'),
+    path('crear_json_AUJESZKY/', views.crear_json_AUJESZKY, name='crear_json_AUJESZKY'),
+    path('plantilla_AUJEZSKY/', views.plantilla_AUJEZSKY, name='plantilla_AUJEZSKY'),    
+
     path('actadigital_AIE2/', views.actadigital_AIE2, name='actadigital_AIE2'), # Hoja Pasa el pdf a Excel de AIE
     path('actadigital_bru2/', views.actadigital_bru2, name='actadigital_bru2'),
 
