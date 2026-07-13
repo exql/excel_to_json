@@ -1411,7 +1411,6 @@ def json_aie_digital(row,codigoLaboratorio):
             'codigoUnidadDeMedidaDeLote': 326,
             'analisis': [
                 {
-                    'id': 1,
                     'codigoEnsayo': row['Rubro'],
                     'resultadoUnico': 'False',
                     'fechaInicio': row['Fecha Inicio'],
@@ -1426,8 +1425,9 @@ def json_aie_digital(row,codigoLaboratorio):
         'codigoTipoDeTramite': "3"
     }
 
-# Construcción del JSON AIE final
-def json_AUJ(row,codigoLaboratorio): 
+# Construcción del JSON final
+def json_AUJ(row,numLab): 
+
     
     conclusion_protocolo = (
         str(row.get("Conclusion Protocolo"))
@@ -1436,7 +1436,7 @@ def json_AUJ(row,codigoLaboratorio):
 
     return {
         'numeroInforme': row['Nro Informe'],
-        'codigoLaboratorio': str(codigoLaboratorio),
+        'codigoLaboratorio': str(numLab),
         'renspaUnidadProductiva': row['RENSPA'],
         'codigoMotivo': row["Motivo"],
         'codigoSubMotivo': row["SubMotivo"], # traerlo del excel
