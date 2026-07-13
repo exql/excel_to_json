@@ -84,9 +84,8 @@ def actadigital_AIE2(request): # Hoja PDF a Excel para AIE
     return render(request, 'actadigital_AIE2.html')
 
 def Actadigital_Aujeszky(request):
-    # Definimos la lista para el bucle
-    contexto = {'actas': [1, 2, 3, 4]}
-    return render(request, 'Actadigital_Aujeszky.html', contexto)
+
+    return render(request, 'Actadigital_Aujeszky.html')
 
 
 #Registrar Usuarios
@@ -1855,6 +1854,94 @@ def actaAUJ_JSON(request):
                 content_type='application/json'
             )
             response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
+            return response
+
+        except Exception as e:
+            import traceback
+            error_msg = traceback.format_exc()
+            print(f"❌ Error en la conversión:\n{error_msg}")
+            return JsonResponse({'error': f'Ocurrió un error en la conversión: {str(e)}'}, status=500)
+
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+# Convierte la plantilla excel a json 
+@csrf_exempt
+def crear_json_AUJESZKY(request):
+    if request.method == 'POST':
+        if 'archivo' not in request.FILES:
+            return JsonResponse({'error': 'No se proporcionó un archivo válido'}, status=400)
+
+        try:
+            archivo = request.FILES['archivo']
+            ext = os.path.splitext(archivo.name)[1].lower()
+            if ext == ".xls":
+                excel_file = pd.read_excel(archivo, engine="xlrd")
+            else:
+                excel_file = pd.read_excel(archivo, engine="openpyxl")
+
+
+            dataLab = LabDataService(request.user)
+            rubroLab = dataLab.rubrosLab(5)
+            codRubro = int(rubroLab[['codigo_rubro']].iloc[0]) if not rubroLab.empty else None
+
+            datoslab = dataLab.datosLab()
+            numLab = str(datoslab['numLab'].iloc[0]) if not datoslab.empty else None
+            codigoDt = int(datoslab['codigoDT'].iloc[0]) if not datoslab.empty else None
+
+            # Agregar las columnas al DataFrame (se repiten en todas las filas)
+            excel_file["Tipo Identificacion"] = 2
+            excel_file['Codigo DT'] = codigoDt
+            excel_file['Rubro'] = codRubro
+
+            # Convertir columnas específicas a tipo string
+            columns_to_str = [
+                "Nro Informe", "RENSPA", "CUIT Funcionario",
+                "Identificacion Muestra", "Identificacion Interna Laboratorio",
+                "Sexo","Observacion Muestra","Antigeno/Kit",
+                "Marca Antigeno/Kit", "Lote", "Estampilla", "Conclusion Protocolo"
+                ]
+            for column in columns_to_str:
+                excel_file[column] = excel_file[column].astype(str)
+
+            # Aplicar el formato de fecha a las columnas correspondientes
+            columnas_de_fecha = ["Fecha de Toma", "Fecha de Recepcion",
+                                 "Fecha Inicio", "Fecha Fin", "Fecha Vencimiento Antigeno/Kit"]
+            for columna in columnas_de_fecha:
+                if columna in excel_file.columns:
+                    excel_file[columna] = excel_file[columna].apply(formatear_fecha)
+
+            submuestras_dict= excel_file.groupby("Nro Informe").apply(submuestras).to_dict()
+            plantilla_agrupada = agrupar_columnas_auj(excel_file)
+           
+            print("📌 Columnas después de agrupar:", list(excel_file.columns))
+            print("📌 Primeras filas después de agrupar:", excel_file.head())
+            # Agrupar solo las columnas generales por número de informe
+                        
+            print("📌 Antes de procesar submuestras")
+            plantilla_agrupada["subMuestras"] = plantilla_agrupada["Nro Informe"].map(submuestras_dict)
+            print("📌 Después de procesar submuestras")
+            print("📌 Submuestras después de procesar:", plantilla_agrupada["subMuestras"].head())
+            # Generar el análisis y submuestras correctamente agrupadas
+            rubrosLab = rubros_lab(request)
+            
+            
+            json_data = plantilla_agrupada.apply(lambda row: json_aie_digital(row, numLab), axis=1).tolist()
+            print("📌 JSON generado:", json_data[:2])  # Ver las primeras 2 estructuras
+            # Guardar el JSON en un archivo temporal
+            with NamedTemporaryFile(delete=False, suffix='.json') as temp_file:
+                file_path = temp_file.name
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    json.dump(json_data, f, ensure_ascii=False, indent=4, default=convertir_tipo)
+
+            # Obtener la fecha actual y formatearla como dd_mm_yy
+            fecha_actual = datetime.now().strftime("%d_%m_%y")
+            nombre_archivo = f"JSON_Aujeszky_{fecha_actual}.json"
+
+            # Enviar el archivo como descarga con el nombre correcto
+            response = HttpResponse(open(file_path, 'rb'), content_type='application/json')
+            response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
+            os.unlink(file_path)
             return response
 
         except Exception as e:
