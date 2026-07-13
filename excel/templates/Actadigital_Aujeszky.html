@@ -102,7 +102,7 @@
                             <label>Estampilla:</label>
                             <input type="text" name="estampilla{{ i }}" maxlength="25">
                         </div>
-                        
+
                         <div class="form-group">
                             <label>Conclusión:</label>
                             <input type="text" name="conclusion{{ i }}" maxlength="1000">
@@ -120,6 +120,16 @@
                     <button type="submit" class="btn" formaction="/actaAUJ_JSON/">JSON</button>
                 </div>
             </form>
+            
+            <div class="ad-box">
+                <h2>Adjuntar Excel del acta digital</h2>
+                <form action="/crear_json_AUJESZKY/" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="file" id="archivo" name="archivo" accept=".xls,.xlsx"><br><br>
+                    <button type="submit">Converti a JSON</button>
+                </form>
+            </div>
+
         </section>
 
         <aside class="right-column">
@@ -130,4 +140,5 @@
         </aside>
     </main>
 </body>
+
 </html>
