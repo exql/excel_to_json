@@ -1653,33 +1653,37 @@ class PDFProcessor:
                 match_fecha = re.search(r"Fecha Muestra:\s*([^\n]+?)(?=\s*Funcionario:)", contenido)
                 datos["FechaToma"] = match_fecha.group(1).strip() if match_fecha else None
 
-                match_motivo = re.search(r"Motivo:\s*(.*?)\s*Submotivo:", contenido, re.DOTALL)
-                motivo_texto = ""
-                if match_motivo:
-                    motivo_texto = match_motivo.group(1).replace("\n", " ").strip()
+                match_bloque = re.search(
+                    r"Motivo:\s*(.*?)\s*Submotivo:\s*(.*?)(?=\s*Expediente|$)",
+                    contenido,
+                    re.DOTALL)
+                print(f"match_bloque: {match_bloque}")
+
+                motivo_texto, submotivo_texto = "", ""
+                if match_bloque:
+                    motivo_texto = match_bloque.group(1).replace("\n", " ").strip()
                     motivo_texto = re.sub(r"\s+", " ", motivo_texto).upper()
-
-                match_submotivo = re.search(r"Submotivo:\s*(.*?)(?=\s*Expediente|$)", contenido, re.DOTALL)
-                submotivo_texto = ""
-                if match_submotivo:
-                    submotivo_texto = match_submotivo.group(1).replace("\n", " ").strip()
+                    
+                    submotivo_texto = match_bloque.group(2).replace("\n", " ").strip()
                     submotivo_texto = re.sub(r"\s+", " ", submotivo_texto).upper()
-
-                    # Reasignación genérica: si el submotivo tiene más de una palabra
+                    # Corrección genérica: si el submotivo contiene palabras que no están en la base,
+                    # se reasignan al motivo
                     partes = submotivo_texto.split()
                     if partes:
-                        primera = partes[0]
-                        if primera in self.submotivos:  # es un submotivo válido
-                            submotivo_texto = primera
-                            if len(partes) > 1:
-                            # mover las palabras sobrantes al motivo
-                                motivo_texto = motivo_texto + " " + " ".join(partes[1:])
-
+                        for i in range(len(partes), 0, -1):
+                            candidato = " ".join(partes[:i])
+                            if candidato in self.submotivos:
+                                submotivo_texto = candidato
+                                if i < len(partes):
+                                    # mover las palabras sobrantes al motivo
+                                    motivo_texto = motivo_texto + " " + " ".join(partes[i:])
+                                break
                 datos["Motivo"] = self.motivos.get(motivo_texto)
                 datos["SubMotivo"] = self.submotivos.get(submotivo_texto)
 
                 print(f"motivo-pdfprocessor: {motivo_texto}")
-                print(f"submotivo-pdfprocessor {submotivo_texto}")
+                print(f"submotivo-pdfprocessor: {submotivo_texto}")
+
 
                 match_especie = re.search(r"Especie:\s*(.*?)(?=\s*Matriz)", contenido, re.DOTALL)
                 if match_especie:
