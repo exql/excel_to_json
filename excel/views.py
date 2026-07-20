@@ -1926,7 +1926,7 @@ def crear_json_AUJESZKY(request):
             rubrosLab = rubros_lab(request)
             
             
-            json_data = plantilla_agrupada.apply(lambda row: json_aie_digital(row, numLab), axis=1).tolist()
+            json_data = plantilla_agrupada.apply(lambda row: json_AUJ(row, numLab), axis=1).tolist()
             print("📌 JSON generado:", json_data[:2])  # Ver las primeras 2 estructuras
             # Guardar el JSON en un archivo temporal
             with NamedTemporaryFile(delete=False, suffix='.json') as temp_file:
